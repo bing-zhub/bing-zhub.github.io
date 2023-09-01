@@ -3,5 +3,18 @@
   
   
   
+  <entry>
+    <title>Go是如何运行的</title>
+    <link href="/2023/09/01/Go%E6%98%AF%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C%E7%9A%84/"/>
+    <url>/2023/09/01/Go%E6%98%AF%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C%E7%9A%84/</url>
+    
+    <content type="html"><![CDATA[<h2 id="入口"><a href="#入口" class="headerlink" title="入口"></a>入口</h2><p>并非是main方法<br>runtime包, <code>_rt0_linux_amd64.s</code>. 汇编程序<br><code>asm_amd64.s</code>, </p><h2 id="读取命令行参数"><a href="#读取命令行参数" class="headerlink" title="读取命令行参数"></a>读取命令行参数</h2><ul><li>复制参数数量argc和参数值argv到栈上</li></ul><h2 id="初始化g0执行栈"><a href="#初始化g0执行栈" class="headerlink" title="初始化g0执行栈"></a>初始化g0执行栈</h2><ul><li>g0是为了调度协程而产生的的协程</li><li>g0是每个Go程序的第一个协程</li></ul><h2 id="运行时检测"><a href="#运行时检测" class="headerlink" title="运行时检测"></a>运行时检测</h2><ul><li>检查各种类型的长度</li><li>检查指针操作</li><li>检查结构体字段的偏移量</li><li>检查atomic原子类型</li><li>检查CAS操作</li><li>检查栈的大小是否为2的幂次</li></ul><h2 id="参数初始化"><a href="#参数初始化" class="headerlink" title="参数初始化"></a>参数初始化</h2><ul><li>对命令行中的参数进行处理</li><li>参数数量赋值给<code>argc int32</code></li><li>参数值赋值给<code>argv **byte</code></li></ul><h2 id="调度器初始化-runtime-schedinit"><a href="#调度器初始化-runtime-schedinit" class="headerlink" title="调度器初始化 runtime.schedinit"></a>调度器初始化 runtime.schedinit</h2><ul><li>全局栈空间内存分配</li><li>加载命令行参数到os.Args</li><li>堆内存空间初始化</li><li>加载操作系统环境变量</li><li>初始化当前系统线程</li><li>垃圾回收器的参数初始化</li><li>算法初始化(map&#x2F;hash)</li><li>设置process数量</li></ul><h2 id="创建主协程"><a href="#创建主协程" class="headerlink" title="创建主协程"></a>创建主协程</h2><ul><li>创建一个新的协程, 执行runtime.main(此前已经有一个g0协程)</li><li>放入调度器等待调度</li></ul><h2 id="初始化M"><a href="#初始化M" class="headerlink" title="初始化M"></a>初始化M</h2><ul><li>初始化一个M, 用来调度主协程</li></ul><h2 id="主协程执行主函数"><a href="#主协程执行主函数" class="headerlink" title="主协程执行主函数"></a>主协程执行主函数</h2><ul><li>执行runtime包中的init方法</li><li>启动GC垃圾收集器</li><li>执行用户包依赖的init方法</li><li>执行用户主函数main.main()</li></ul><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>Go启动时经历了检查, 各种初始化, 初始化协程调度的过程<br>main.main()也是在协程中运行的<br>Go程序的启动过程像一个虚拟机, 或框架.</p>]]></content>
+    
+    
+    
+  </entry>
+  
+  
+  
   
 </search>
