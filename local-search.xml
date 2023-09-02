@@ -4,6 +4,27 @@
   
   
   <entry>
+    <title>MQTT入门与进阶 - 2</title>
+    <link href="/2023/09/02/MQTT%E5%85%A5%E9%97%A8%E4%B8%8E%E8%BF%9B%E9%98%B6-2/"/>
+    <url>/2023/09/02/MQTT%E5%85%A5%E9%97%A8%E4%B8%8E%E8%BF%9B%E9%98%B6-2/</url>
+    
+    <content type="html"><![CDATA[<h2 id="发布和订阅"><a href="#发布和订阅" class="headerlink" title="发布和订阅"></a>发布和订阅</h2><h3 id="发布消息"><a href="#发布消息" class="headerlink" title="发布消息"></a>发布消息</h3><p><img src="/img/20230323223119.png" alt="20230323223119.png"><br>Topic Name: UTF-8 String<br>QoS: Integer</p><blockquote><p>QoS 0: 消息可能丢失<br>QoS 1: 消息不会丢失但可能重复<br>QoS 2: 消息不会丢失也不会重复</p></blockquote><p>Payload: Binary<br><img src="/img/20230323223329.png" alt="20230323223329.png"><br>保留消息<br><img src="/img/20230323223622.png" alt="20230323223622.png"><br>正常转发的同时, 也会在本地保存副本, 当有新的客户端建立订阅时, 保留消息就会下发给客户端.<br><img src="/img/20230323223744.png" alt="20230323223744.png"></p><h3 id="订阅消息"><a href="#订阅消息" class="headerlink" title="订阅消息"></a>订阅消息</h3><p><img src="/img/20230323223826.png" alt="20230323223826.png"><br>Packet ID<br><img src="/img/20230323223904.png" alt="20230323223904.png"><br>Subscription List</p><blockquote><p>可以一次订阅多个报文<br><img src="/img/20230323223936.png" alt="20230323223936.png"><br>Topic Filter 可以使用主题通配符<br><img src="/img/20230323224020.png" alt="20230323224020.png"><br> <strong>但发布时不能使用主题通配符</strong></p></blockquote><p>发布QoS &#x3D; 2的消息, 但接收端QoS &#x3D; 1, QoS &#x3D; 2的消息将会被降级<br><img src="/img/20230323224214.png" alt="20230323224214.png"><br>如果没有超过最大QoS, 则保持不变<br><img src="/img/20230323224301.png" alt="20230323224301.png"><br>使用相同主题过滤器的新订阅将覆盖旧订阅<br>消息将转发给所有匹配的订阅<br><img src="/img/20230323224425.png" alt="20230323224425.png"><br>订阅回复报文<br><img src="/img/20230323224451.png" alt="20230323224451.png"><br>Reason Codes<br><img src="/img/20230323224515.png" alt="20230323224515.png"><br>Granted Maximum QoS - 可能小于订阅时的Maximum QoS<br><img src="/img/20230323224614.png" alt="20230323224614.png"><br><img src="/img/20230323224628.png" alt="20230323224628.png"></p><h3 id="取消订阅"><a href="#取消订阅" class="headerlink" title="取消订阅"></a>取消订阅</h3><p><img src="/img/20230323224648.png" alt="20230323224648.png"><br>想要取消订阅的Topic Filter-&gt; 完全的文本匹配 -&gt; 实际订阅的Topic Filter<br><img src="/img/20230323224713.png" alt="20230323224713.png"><br><img src="/img/20230323224804.png" alt="20230323224804.png"></p><h2 id="主题"><a href="#主题" class="headerlink" title="主题"></a>主题</h2><p>类型 UTF-8字符串<br>最大长度 65535字节<br>区分大小写</p><h3 id="主题通配符"><a href="#主题通配符" class="headerlink" title="主题通配符"></a>主题通配符</h3><ul><li>单层通配符<br><img src="/img/20230323224919.png" alt="20230323224919.png"><br><img src="/img/20230323224938.png" alt="20230323224938.png"><br><img src="/img/20230323225024.png" alt="20230323225024.png"><br>一个单层通配符不能匹配多个层级, 但可以通过多个通配符实现<br><img src="/img/20230323225127.png" alt="20230323225127.png"></li><li>多层通配符<br> <code>#</code>可以匹配任意数量个层级<br> <img src="/img/20230323225312.png" alt="20230323225312.png"><br> <img src="/img/20230323225326.png" alt="20230323225326.png"><br> 单层和多层可以搭配使用<br> <img src="/img/20230323225354.png" alt="20230323225354.png"><br>主题名 在发布时不支持主题通配符<br>主题过滤器 在订阅和取消订阅时使用, 支持主题通配符</li><li>特殊主题<br>以<code>$</code>开头的主题, 由服务器使用, 客户端只能订阅, 不能发布.<br><img src="/img/20230323225600.png" alt="20230323225600.png"><br><code>#</code>并不包含<code>$SYS</code>主题, 需要明确指定<code>$SYS/#</code></li></ul><h3 id="最佳实践"><a href="#最佳实践" class="headerlink" title="最佳实践"></a>最佳实践</h3><ul><li>不建议主题以<code>/</code>开头或结尾</li><li>尽量仅使用ASCII字符</li><li>不建议在主题使用空格</li><li>不建议使用<code>#</code>订阅所有主题</li><li>尽量使用简洁的主题</li><li>在主题中包含标识信息</li></ul>]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>MQTT</tag>
+      
+      <tag>IoT</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>MQTT入门与进阶 - 1</title>
     <link href="/2023/09/02/MQTT%E5%85%A5%E9%97%A8%E4%B8%8E%E8%BF%9B%E9%98%B6-1/"/>
     <url>/2023/09/02/MQTT%E5%85%A5%E9%97%A8%E4%B8%8E%E8%BF%9B%E9%98%B6-1/</url>

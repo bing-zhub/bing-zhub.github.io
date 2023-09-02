@@ -16,46 +16,52 @@
   <meta name="author" content="Bing Zhu">
   <meta name="keywords" content="">
   
-    <meta name="description" content="MQTT 3.1.1 全解 使用场景基于发布订阅模型的轻量级的消息传输协议  发布订阅发布者 - 代理(接收订阅, Broker) - 订阅者 轻量集成简单 &#x2F; 传输编解码友好  专为受限设备和低带宽&#x2F;高延迟&#x2F;不可靠网络设计发布订阅 &#x2F; 简单 &#x2F; 轻量 &#x2F; 可靠交付 MQTT 1.0 IBM内部使用MQTT 3.1 开放给所有人使用MQT">
+    <meta name="description" content="发布和订阅发布消息Topic Name: UTF-8 StringQoS: Integer  QoS 0: 消息可能丢失QoS 1: 消息不会丢失但可能重复QoS 2: 消息不会丢失也不会重复  Payload: Binary保留消息正常转发的同时, 也会在本地保存副本, 当有新的客户端建立订阅时, 保留消息就会下发给客户端. 订阅消息Packet IDSubscription List  可以一">
 <meta property="og:type" content="article">
-<meta property="og:title" content="MQTT入门与进阶 - 1">
-<meta property="og:url" content="https://bing-zhub.github.io/2023/09/02/MQTT%E5%85%A5%E9%97%A8%E4%B8%8E%E8%BF%9B%E9%98%B6-1/index.html">
+<meta property="og:title" content="MQTT入门与进阶 - 2">
+<meta property="og:url" content="https://bing-zhub.github.io/2023/09/02/MQTT%E5%85%A5%E9%97%A8%E4%B8%8E%E8%BF%9B%E9%98%B6-2/index.html">
 <meta property="og:site_name" content="Bing&#39;s Blog">
-<meta property="og:description" content="MQTT 3.1.1 全解 使用场景基于发布订阅模型的轻量级的消息传输协议  发布订阅发布者 - 代理(接收订阅, Broker) - 订阅者 轻量集成简单 &#x2F; 传输编解码友好  专为受限设备和低带宽&#x2F;高延迟&#x2F;不可靠网络设计发布订阅 &#x2F; 简单 &#x2F; 轻量 &#x2F; 可靠交付 MQTT 1.0 IBM内部使用MQTT 3.1 开放给所有人使用MQT">
+<meta property="og:description" content="发布和订阅发布消息Topic Name: UTF-8 StringQoS: Integer  QoS 0: 消息可能丢失QoS 1: 消息不会丢失但可能重复QoS 2: 消息不会丢失也不会重复  Payload: Binary保留消息正常转发的同时, 也会在本地保存副本, 当有新的客户端建立订阅时, 保留消息就会下发给客户端. 订阅消息Packet IDSubscription List  可以一">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://bing-zhub.github.io/img/20230323121323.png">
-<meta property="og:image" content="https://bing-zhub.github.io/img/20230323121351.png">
-<meta property="og:image" content="https://bing-zhub.github.io/img/20230323123059.png">
-<meta property="og:image" content="https://bing-zhub.github.io/img/20230323123029.png">
-<meta property="og:image" content="https://bing-zhub.github.io/img/20230323123925.png">
-<meta property="og:image" content="https://bing-zhub.github.io/img/20230323124104.png">
-<meta property="og:image" content="https://bing-zhub.github.io/img/20230323124205.png">
-<meta property="og:image" content="https://bing-zhub.github.io/img/20230323124252.png">
-<meta property="og:image" content="https://bing-zhub.github.io/img/20230323124447.png">
-<meta property="og:image" content="https://bing-zhub.github.io/img/20230323124640.png">
-<meta property="og:image" content="https://bing-zhub.github.io/img/20230323124718.png">
-<meta property="og:image" content="https://bing-zhub.github.io/img/20230323124740.png">
-<meta property="og:image" content="https://bing-zhub.github.io/img/20230323124846.png">
-<meta property="og:image" content="https://bing-zhub.github.io/img/20230323124857.png">
-<meta property="og:image" content="https://bing-zhub.github.io/img/20230323124958.png">
-<meta property="og:image" content="https://bing-zhub.github.io/img/20230323125033.png">
-<meta property="og:image" content="https://bing-zhub.github.io/img/20230323125100.png">
-<meta property="og:image" content="https://bing-zhub.github.io/img/20230323125207.png">
-<meta property="og:image" content="https://bing-zhub.github.io/img/20230323125237.png">
-<meta property="og:image" content="https://bing-zhub.github.io/img/20230323125332.png">
-<meta property="article:published_time" content="2023-09-02T08:50:35.000Z">
-<meta property="article:modified_time" content="2023-09-02T08:51:58.767Z">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323223119.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323223329.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323223622.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323223744.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323223826.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323223904.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323223936.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323224020.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323224214.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323224301.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323224425.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323224451.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323224515.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323224614.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323224628.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323224648.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323224713.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323224804.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323224919.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323224938.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323225024.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323225127.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323225312.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323225326.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323225354.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323225600.png">
+<meta property="article:published_time" content="2023-09-02T08:52:41.000Z">
+<meta property="article:modified_time" content="2023-09-02T08:52:59.158Z">
 <meta property="article:author" content="Bing Zhu">
 <meta property="article:tag" content="MQTT">
 <meta property="article:tag" content="IoT">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://bing-zhub.github.io/img/20230323121323.png">
+<meta name="twitter:image" content="https://bing-zhub.github.io/img/20230323223119.png">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>MQTT入门与进阶 - 1 - Bing&#39;s Blog</title>
+  <title>MQTT入门与进阶 - 2 - Bing&#39;s Blog</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -248,7 +254,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="MQTT入门与进阶 - 1"></span>
+            <span id="subtitle" data-typed-text="MQTT入门与进阶 - 2"></span>
           
         </div>
 
@@ -259,7 +265,7 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2023-09-02 16:50" pubdate>
+        <time datetime="2023-09-02 16:52" pubdate>
           2023年9月2日 下午
         </time>
       </span>
@@ -271,7 +277,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.4k 字
+          681 字
         
       </span>
     
@@ -282,7 +288,7 @@
         
         
         
-          12 分钟
+          6 分钟
         
       </span>
     
@@ -319,67 +325,36 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">MQTT入门与进阶 - 1</h1>
+            <h1 id="seo-header">MQTT入门与进阶 - 2</h1>
             
             
               <div class="markdown-body">
                 
-                <p>MQTT 3.1.1 全解</p>
-<h2 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h2><p>基于发布订阅模型的轻量级的消息传输协议</p>
-<ul>
-<li>发布订阅<br>发布者 - 代理(接收订阅, Broker) - 订阅者</li>
-<li>轻量<br>集成简单 &#x2F; 传输编解码友好</li>
-</ul>
-<p>专为受限设备和低带宽&#x2F;高延迟&#x2F;不可靠网络设计<br>发布订阅 &#x2F; 简单 &#x2F; 轻量 &#x2F; 可靠交付</p>
-<p>MQTT 1.0 IBM内部使用<br>MQTT 3.1 开放给所有人使用<br>MQTT 3.1.1 提交给OASIS进行标准修订<br>MQTT 5.0 2019年发布, MQTT最新版本, 最重要的一次升级</p>
-<h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><h3 id="通信模式"><a href="#通信模式" class="headerlink" title="通信模式"></a>通信模式</h3><p><img src="/img/20230323121323.png" srcset="/img/loading.gif" lazyload alt="20230323121323.png"><br>不同与HTTP的请求响应模式, MQTT采用发布订阅模式<br>因此, MQTT可以实现多种通信模式<br><img src="/img/20230323121351.png" srcset="/img/loading.gif" lazyload alt="20230323121351.png"></p>
-<h3 id="可靠网络"><a href="#可靠网络" class="headerlink" title="可靠网络"></a>可靠网络</h3><p>为了实现消息可靠, 在传输层选择了TCP协议.<br>如果简单的密码验证无法满足需求, 还是建立在TLS之上, 实现消息的加密.<br>如果需要在Web上进行使用, MQTT还可以建立在WebSocket之上</p>
-<h3 id="服务质量-QoS"><a href="#服务质量-QoS" class="headerlink" title="服务质量 QoS"></a>服务质量 QoS</h3><ul>
-<li>QoS 0 - 消息可能丢失 &lt;&#x3D; 1</li>
-<li>QoS 1 - 消息不会丢失, 但可能重复 &gt;&#x3D; 1</li>
-<li>QoS 2- 消息不会丢失, 也不会重复 &#x3D;&#x3D; 1</li>
-</ul>
-<h3 id="心跳保活-KeepAlive"><a href="#心跳保活-KeepAlive" class="headerlink" title="心跳保活 KeepAlive"></a>心跳保活 KeepAlive</h3><p>链接很容易进入假死状态, 为了减少对上层的影响, 需要尽快的感知到连接的异常状态.<br>但TCP的KeepAlive时间过长, 所以MQTT也自定义了心跳机制</p>
-<h3 id="遗嘱-Will-Message"><a href="#遗嘱-Will-Message" class="headerlink" title="遗嘱 Will Message"></a>遗嘱 Will Message</h3><p>通讯双方无法感知到设备是否在线, 为了解决该问题引入遗嘱机制.<br>连接时会设置好遗嘱内容, 一旦代理发现链接异常断开, 就会向订阅了这个遗嘱Topic的客户端发送信息.</p>
-<h3 id="保留消息-Retained-Message"><a href="#保留消息-Retained-Message" class="headerlink" title="保留消息 Retained Message"></a>保留消息 Retained Message</h3><p>如果客户端不在线, 就会错过该消息, 如果不想这样, 就可以设置保留消息, 会让Broker保留向某个主题发送的最后一条消息. 订阅者上线, Broker就会把消息发送给它.</p>
-<h2 id="报文基础"><a href="#报文基础" class="headerlink" title="报文基础"></a>报文基础</h2><h3 id="报文类型"><a href="#报文类型" class="headerlink" title="报文类型"></a>报文类型</h3><p>连接</p>
-<ul>
-<li>CONNECT<blockquote>
-<p>包含客户端标识&#x2F;用户名&#x2F;密码&#x2F;遗嘱消息</p>
+                <h2 id="发布和订阅"><a href="#发布和订阅" class="headerlink" title="发布和订阅"></a>发布和订阅</h2><h3 id="发布消息"><a href="#发布消息" class="headerlink" title="发布消息"></a>发布消息</h3><p><img src="/img/20230323223119.png" srcset="/img/loading.gif" lazyload alt="20230323223119.png"><br>Topic Name: UTF-8 String<br>QoS: Integer</p>
+<blockquote>
+<p>QoS 0: 消息可能丢失<br>QoS 1: 消息不会丢失但可能重复<br>QoS 2: 消息不会丢失也不会重复</p>
 </blockquote>
-</li>
-<li>CONNACK</li>
-<li>DISCONNECT<br>发布</li>
-<li>PUBLISH<blockquote>
-<p>主题&#x2F;QoS&#x2F;Payload</p>
+<p>Payload: Binary<br><img src="/img/20230323223329.png" srcset="/img/loading.gif" lazyload alt="20230323223329.png"><br>保留消息<br><img src="/img/20230323223622.png" srcset="/img/loading.gif" lazyload alt="20230323223622.png"><br>正常转发的同时, 也会在本地保存副本, 当有新的客户端建立订阅时, 保留消息就会下发给客户端.<br><img src="/img/20230323223744.png" srcset="/img/loading.gif" lazyload alt="20230323223744.png"></p>
+<h3 id="订阅消息"><a href="#订阅消息" class="headerlink" title="订阅消息"></a>订阅消息</h3><p><img src="/img/20230323223826.png" srcset="/img/loading.gif" lazyload alt="20230323223826.png"><br>Packet ID<br><img src="/img/20230323223904.png" srcset="/img/loading.gif" lazyload alt="20230323223904.png"><br>Subscription List</p>
+<blockquote>
+<p>可以一次订阅多个报文<br><img src="/img/20230323223936.png" srcset="/img/loading.gif" lazyload alt="20230323223936.png"><br>Topic Filter 可以使用主题通配符<br><img src="/img/20230323224020.png" srcset="/img/loading.gif" lazyload alt="20230323224020.png"><br> <strong>但发布时不能使用主题通配符</strong></p>
 </blockquote>
-</li>
-<li>PUBACK</li>
-<li>PUBREC</li>
-<li>PUBREL</li>
-<li>PUBCOMP<br>订阅</li>
-<li>SUBSCRIBE<blockquote>
-<p>主题&#x2F;QoS</p>
-</blockquote>
-</li>
-<li>SUBACK</li>
-<li>UNSUBSCRIBE</li>
-<li>UNSUNACK<br>心跳</li>
-<li>PINGREQ</li>
-<li>PINGRESP</li>
+<p>发布QoS &#x3D; 2的消息, 但接收端QoS &#x3D; 1, QoS &#x3D; 2的消息将会被降级<br><img src="/img/20230323224214.png" srcset="/img/loading.gif" lazyload alt="20230323224214.png"><br>如果没有超过最大QoS, 则保持不变<br><img src="/img/20230323224301.png" srcset="/img/loading.gif" lazyload alt="20230323224301.png"><br>使用相同主题过滤器的新订阅将覆盖旧订阅<br>消息将转发给所有匹配的订阅<br><img src="/img/20230323224425.png" srcset="/img/loading.gif" lazyload alt="20230323224425.png"><br>订阅回复报文<br><img src="/img/20230323224451.png" srcset="/img/loading.gif" lazyload alt="20230323224451.png"><br>Reason Codes<br><img src="/img/20230323224515.png" srcset="/img/loading.gif" lazyload alt="20230323224515.png"><br>Granted Maximum QoS - 可能小于订阅时的Maximum QoS<br><img src="/img/20230323224614.png" srcset="/img/loading.gif" lazyload alt="20230323224614.png"><br><img src="/img/20230323224628.png" srcset="/img/loading.gif" lazyload alt="20230323224628.png"></p>
+<h3 id="取消订阅"><a href="#取消订阅" class="headerlink" title="取消订阅"></a>取消订阅</h3><p><img src="/img/20230323224648.png" srcset="/img/loading.gif" lazyload alt="20230323224648.png"><br>想要取消订阅的Topic Filter-&gt; 完全的文本匹配 -&gt; 实际订阅的Topic Filter<br><img src="/img/20230323224713.png" srcset="/img/loading.gif" lazyload alt="20230323224713.png"><br><img src="/img/20230323224804.png" srcset="/img/loading.gif" lazyload alt="20230323224804.png"></p>
+<h2 id="主题"><a href="#主题" class="headerlink" title="主题"></a>主题</h2><p>类型 UTF-8字符串<br>最大长度 65535字节<br>区分大小写</p>
+<h3 id="主题通配符"><a href="#主题通配符" class="headerlink" title="主题通配符"></a>主题通配符</h3><ul>
+<li>单层通配符<br><img src="/img/20230323224919.png" srcset="/img/loading.gif" lazyload alt="20230323224919.png"><br><img src="/img/20230323224938.png" srcset="/img/loading.gif" lazyload alt="20230323224938.png"><br><img src="/img/20230323225024.png" srcset="/img/loading.gif" lazyload alt="20230323225024.png"><br>一个单层通配符不能匹配多个层级, 但可以通过多个通配符实现<br><img src="/img/20230323225127.png" srcset="/img/loading.gif" lazyload alt="20230323225127.png"></li>
+<li>多层通配符<br> <code>#</code>可以匹配任意数量个层级<br> <img src="/img/20230323225312.png" srcset="/img/loading.gif" lazyload alt="20230323225312.png"><br> <img src="/img/20230323225326.png" srcset="/img/loading.gif" lazyload alt="20230323225326.png"><br> 单层和多层可以搭配使用<br> <img src="/img/20230323225354.png" srcset="/img/loading.gif" lazyload alt="20230323225354.png"><br>主题名 在发布时不支持主题通配符<br>主题过滤器 在订阅和取消订阅时使用, 支持主题通配符</li>
+<li>特殊主题<br>以<code>$</code>开头的主题, 由服务器使用, 客户端只能订阅, 不能发布.<br><img src="/img/20230323225600.png" srcset="/img/loading.gif" lazyload alt="20230323225600.png"><br><code>#</code>并不包含<code>$SYS</code>主题, 需要明确指定<code>$SYS/#</code></li>
 </ul>
-<h3 id="报文格式"><a href="#报文格式" class="headerlink" title="报文格式"></a>报文格式</h3><p>固定报头Fixed Header - 所有控制报文</p>
-<ul>
-<li>报文类型</li>
-<li>标志</li>
-<li>剩余报文长度<br>可变报头Variable Header - 部分控制报文</li>
-<li>内容视报文类型而定<br>有效载荷Payload - 不分控制论文</li>
-<li>内容视报文类型而定</li>
+<h3 id="最佳实践"><a href="#最佳实践" class="headerlink" title="最佳实践"></a>最佳实践</h3><ul>
+<li>不建议主题以<code>/</code>开头或结尾</li>
+<li>尽量仅使用ASCII字符</li>
+<li>不建议在主题使用空格</li>
+<li>不建议使用<code>#</code>订阅所有主题</li>
+<li>尽量使用简洁的主题</li>
+<li>在主题中包含标识信息</li>
 </ul>
-<p>Publish报文<br><img src="/img/20230323123059.png" srcset="/img/loading.gif" lazyload alt="20230323123059.png"><br>心跳报文仅需两个字节<br><img src="/img/20230323123029.png" srcset="/img/loading.gif" lazyload alt="20230323123029.png"></p>
-<h2 id="发布订阅模式"><a href="#发布订阅模式" class="headerlink" title="发布订阅模式"></a>发布订阅模式</h2><p><img src="/img/20230323123925.png" srcset="/img/loading.gif" lazyload alt="20230323123925.png"><br>发布者并不知道订阅者是否收到了消息, 为了解决该问题, 需要在业务层面确认消息<br><img src="/img/20230323124104.png" srcset="/img/loading.gif" lazyload alt="20230323124104.png"></p>
-<h2 id="连接"><a href="#连接" class="headerlink" title="连接"></a>连接</h2><p>先通过三次握手建立TCP连接 至少2 RTT<br> <img src="/img/20230323124205.png" srcset="/img/loading.gif" lazyload alt="20230323124205.png"><br> Client ID唯一标识了一个会话, 因此必须全局唯一<br> <img src="/img/20230323124252.png" srcset="/img/loading.gif" lazyload alt="20230323124252.png"><br> MQTT连接的建立<br> <img src="/img/20230323124447.png" srcset="/img/loading.gif" lazyload alt="20230323124447.png"><br> 如果client id为0, broker会分配一个全局唯一的cleint id, 通过connack报文返回, 但由于是临时分配的, 后续无法使用持久会话.<br>  <img src="/img/20230323124640.png" srcset="/img/loading.gif" lazyload alt="20230323124640.png"><br>协议名<br><img src="/img/20230323124718.png" srcset="/img/loading.gif" lazyload alt="20230323124718.png"><br>协议级别<br><img src="/img/20230323124740.png" srcset="/img/loading.gif" lazyload alt="20230323124740.png"><br>用户名和密码<br>User Name &amp; Password<br>认证 &amp; 授权<br><img src="/img/20230323124846.png" srcset="/img/loading.gif" lazyload alt="20230323124846.png"><br><img src="/img/20230323124857.png" srcset="/img/loading.gif" lazyload alt="20230323124857.png"><br>保活 Keep Alive<br><img src="/img/20230323124958.png" srcset="/img/loading.gif" lazyload alt="20230323124958.png"><br>1.5倍的Keep Alive Interval没有收到心跳包 则断开连接<br><img src="/img/20230323125033.png" srcset="/img/loading.gif" lazyload alt="20230323125033.png"><br><img src="/img/20230323125100.png" srcset="/img/loading.gif" lazyload alt="20230323125100.png"><br>最大允许的保活间隔 18H12M15S</p>
-<p>断开连接 DISCONNECT<br>客户端发起, 因此不会发布遗嘱信息<br><img src="/img/20230323125207.png" srcset="/img/loading.gif" lazyload alt="20230323125207.png"><br>超时也会断开连接<br><img src="/img/20230323125237.png" srcset="/img/loading.gif" lazyload alt="20230323125237.png"><br>Broker主动断开<br><img src="/img/20230323125332.png" srcset="/img/loading.gif" lazyload alt="20230323125332.png"></p>
 
                 
               </div>
@@ -406,8 +381,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>MQTT入门与进阶 - 1</div>
-      <div>https://bing-zhub.github.io/2023/09/02/MQTT入门与进阶-1/</div>
+      <div>MQTT入门与进阶 - 2</div>
+      <div>https://bing-zhub.github.io/2023/09/02/MQTT入门与进阶-2/</div>
     </div>
     <div class="license-meta">
       
@@ -451,18 +426,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2023/09/02/MQTT%E5%85%A5%E9%97%A8%E4%B8%8E%E8%BF%9B%E9%98%B6-2/" title="MQTT入门与进阶 - 2">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">MQTT入门与进阶 - 2</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2023/09/02/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E4%B8%8E%E8%87%AA%E5%8A%A8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" title="性能优化与自动内存管理">
-                        <span class="hidden-mobile">性能优化与自动内存管理</span>
+                      <a href="/2023/09/02/MQTT%E5%85%A5%E9%97%A8%E4%B8%8E%E8%BF%9B%E9%98%B6-1/" title="MQTT入门与进阶 - 1">
+                        <span class="hidden-mobile">MQTT入门与进阶 - 1</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
