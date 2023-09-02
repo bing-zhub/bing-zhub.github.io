@@ -1,0 +1,753 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/favicon.jpg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Bing Zhu">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="MQTT 3.1.1 全解 使用场景基于发布订阅模型的轻量级的消息传输协议  发布订阅发布者 - 代理(接收订阅, Broker) - 订阅者 轻量集成简单 &#x2F; 传输编解码友好  专为受限设备和低带宽&#x2F;高延迟&#x2F;不可靠网络设计发布订阅 &#x2F; 简单 &#x2F; 轻量 &#x2F; 可靠交付 MQTT 1.0 IBM内部使用MQTT 3.1 开放给所有人使用MQT">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MQTT入门与进阶 - 1">
+<meta property="og:url" content="https://bing-zhub.github.io/2023/09/02/MQTT%E5%85%A5%E9%97%A8%E4%B8%8E%E8%BF%9B%E9%98%B6-1/index.html">
+<meta property="og:site_name" content="Bing&#39;s Blog">
+<meta property="og:description" content="MQTT 3.1.1 全解 使用场景基于发布订阅模型的轻量级的消息传输协议  发布订阅发布者 - 代理(接收订阅, Broker) - 订阅者 轻量集成简单 &#x2F; 传输编解码友好  专为受限设备和低带宽&#x2F;高延迟&#x2F;不可靠网络设计发布订阅 &#x2F; 简单 &#x2F; 轻量 &#x2F; 可靠交付 MQTT 1.0 IBM内部使用MQTT 3.1 开放给所有人使用MQT">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323121323.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323121351.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323123059.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323123029.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323123925.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323124104.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323124205.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323124252.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323124447.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323124640.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323124718.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323124740.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323124846.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323124857.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323124958.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323125033.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323125100.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323125207.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323125237.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230323125332.png">
+<meta property="article:published_time" content="2023-09-02T08:50:35.000Z">
+<meta property="article:modified_time" content="2023-09-02T08:51:58.767Z">
+<meta property="article:author" content="Bing Zhu">
+<meta property="article:tag" content="MQTT">
+<meta property="article:tag" content="IoT">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://bing-zhub.github.io/img/20230323121323.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>MQTT入门与进阶 - 1 - Bing&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"bing-zhub.github.io","root":"/","version":"1.9.5-a","typing":{"enable":true,"typeSpeed":120,"cursorChar":"❥","loop":true,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Bing&#39;s Blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="MQTT入门与进阶 - 1"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-09-02 16:50" pubdate>
+          2023年9月2日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          12 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">MQTT入门与进阶 - 1</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>MQTT 3.1.1 全解</p>
+<h2 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h2><p>基于发布订阅模型的轻量级的消息传输协议</p>
+<ul>
+<li>发布订阅<br>发布者 - 代理(接收订阅, Broker) - 订阅者</li>
+<li>轻量<br>集成简单 &#x2F; 传输编解码友好</li>
+</ul>
+<p>专为受限设备和低带宽&#x2F;高延迟&#x2F;不可靠网络设计<br>发布订阅 &#x2F; 简单 &#x2F; 轻量 &#x2F; 可靠交付</p>
+<p>MQTT 1.0 IBM内部使用<br>MQTT 3.1 开放给所有人使用<br>MQTT 3.1.1 提交给OASIS进行标准修订<br>MQTT 5.0 2019年发布, MQTT最新版本, 最重要的一次升级</p>
+<h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><h3 id="通信模式"><a href="#通信模式" class="headerlink" title="通信模式"></a>通信模式</h3><p><img src="/img/20230323121323.png" srcset="/img/loading.gif" lazyload alt="20230323121323.png"><br>不同与HTTP的请求响应模式, MQTT采用发布订阅模式<br>因此, MQTT可以实现多种通信模式<br><img src="/img/20230323121351.png" srcset="/img/loading.gif" lazyload alt="20230323121351.png"></p>
+<h3 id="可靠网络"><a href="#可靠网络" class="headerlink" title="可靠网络"></a>可靠网络</h3><p>为了实现消息可靠, 在传输层选择了TCP协议.<br>如果简单的密码验证无法满足需求, 还是建立在TLS之上, 实现消息的加密.<br>如果需要在Web上进行使用, MQTT还可以建立在WebSocket之上</p>
+<h3 id="服务质量-QoS"><a href="#服务质量-QoS" class="headerlink" title="服务质量 QoS"></a>服务质量 QoS</h3><ul>
+<li>QoS 0 - 消息可能丢失 &lt;&#x3D; 1</li>
+<li>QoS 1 - 消息不会丢失, 但可能重复 &gt;&#x3D; 1</li>
+<li>QoS 2- 消息不会丢失, 也不会重复 &#x3D;&#x3D; 1</li>
+</ul>
+<h3 id="心跳保活-KeepAlive"><a href="#心跳保活-KeepAlive" class="headerlink" title="心跳保活 KeepAlive"></a>心跳保活 KeepAlive</h3><p>链接很容易进入假死状态, 为了减少对上层的影响, 需要尽快的感知到连接的异常状态.<br>但TCP的KeepAlive时间过长, 所以MQTT也自定义了心跳机制</p>
+<h3 id="遗嘱-Will-Message"><a href="#遗嘱-Will-Message" class="headerlink" title="遗嘱 Will Message"></a>遗嘱 Will Message</h3><p>通讯双方无法感知到设备是否在线, 为了解决该问题引入遗嘱机制.<br>连接时会设置好遗嘱内容, 一旦代理发现链接异常断开, 就会向订阅了这个遗嘱Topic的客户端发送信息.</p>
+<h3 id="保留消息-Retained-Message"><a href="#保留消息-Retained-Message" class="headerlink" title="保留消息 Retained Message"></a>保留消息 Retained Message</h3><p>如果客户端不在线, 就会错过该消息, 如果不想这样, 就可以设置保留消息, 会让Broker保留向某个主题发送的最后一条消息. 订阅者上线, Broker就会把消息发送给它.</p>
+<h2 id="报文基础"><a href="#报文基础" class="headerlink" title="报文基础"></a>报文基础</h2><h3 id="报文类型"><a href="#报文类型" class="headerlink" title="报文类型"></a>报文类型</h3><p>连接</p>
+<ul>
+<li>CONNECT<blockquote>
+<p>包含客户端标识&#x2F;用户名&#x2F;密码&#x2F;遗嘱消息</p>
+</blockquote>
+</li>
+<li>CONNACK</li>
+<li>DISCONNECT<br>发布</li>
+<li>PUBLISH<blockquote>
+<p>主题&#x2F;QoS&#x2F;Payload</p>
+</blockquote>
+</li>
+<li>PUBACK</li>
+<li>PUBREC</li>
+<li>PUBREL</li>
+<li>PUBCOMP<br>订阅</li>
+<li>SUBSCRIBE<blockquote>
+<p>主题&#x2F;QoS</p>
+</blockquote>
+</li>
+<li>SUBACK</li>
+<li>UNSUBSCRIBE</li>
+<li>UNSUNACK<br>心跳</li>
+<li>PINGREQ</li>
+<li>PINGRESP</li>
+</ul>
+<h3 id="报文格式"><a href="#报文格式" class="headerlink" title="报文格式"></a>报文格式</h3><p>固定报头Fixed Header - 所有控制报文</p>
+<ul>
+<li>报文类型</li>
+<li>标志</li>
+<li>剩余报文长度<br>可变报头Variable Header - 部分控制报文</li>
+<li>内容视报文类型而定<br>有效载荷Payload - 不分控制论文</li>
+<li>内容视报文类型而定</li>
+</ul>
+<p>Publish报文<br><img src="/img/20230323123059.png" srcset="/img/loading.gif" lazyload alt="20230323123059.png"><br>心跳报文仅需两个字节<br><img src="/img/20230323123029.png" srcset="/img/loading.gif" lazyload alt="20230323123029.png"></p>
+<h2 id="发布订阅模式"><a href="#发布订阅模式" class="headerlink" title="发布订阅模式"></a>发布订阅模式</h2><p><img src="/img/20230323123925.png" srcset="/img/loading.gif" lazyload alt="20230323123925.png"><br>发布者并不知道订阅者是否收到了消息, 为了解决该问题, 需要在业务层面确认消息<br><img src="/img/20230323124104.png" srcset="/img/loading.gif" lazyload alt="20230323124104.png"></p>
+<h2 id="连接"><a href="#连接" class="headerlink" title="连接"></a>连接</h2><p>先通过三次握手建立TCP连接 至少2 RTT<br> <img src="/img/20230323124205.png" srcset="/img/loading.gif" lazyload alt="20230323124205.png"><br> Client ID唯一标识了一个会话, 因此必须全局唯一<br> <img src="/img/20230323124252.png" srcset="/img/loading.gif" lazyload alt="20230323124252.png"><br> MQTT连接的建立<br> <img src="/img/20230323124447.png" srcset="/img/loading.gif" lazyload alt="20230323124447.png"><br> 如果client id为0, broker会分配一个全局唯一的cleint id, 通过connack报文返回, 但由于是临时分配的, 后续无法使用持久会话.<br>  <img src="/img/20230323124640.png" srcset="/img/loading.gif" lazyload alt="20230323124640.png"><br>协议名<br><img src="/img/20230323124718.png" srcset="/img/loading.gif" lazyload alt="20230323124718.png"><br>协议级别<br><img src="/img/20230323124740.png" srcset="/img/loading.gif" lazyload alt="20230323124740.png"><br>用户名和密码<br>User Name &amp; Password<br>认证 &amp; 授权<br><img src="/img/20230323124846.png" srcset="/img/loading.gif" lazyload alt="20230323124846.png"><br><img src="/img/20230323124857.png" srcset="/img/loading.gif" lazyload alt="20230323124857.png"><br>保活 Keep Alive<br><img src="/img/20230323124958.png" srcset="/img/loading.gif" lazyload alt="20230323124958.png"><br>1.5倍的Keep Alive Interval没有收到心跳包 则断开连接<br><img src="/img/20230323125033.png" srcset="/img/loading.gif" lazyload alt="20230323125033.png"><br><img src="/img/20230323125100.png" srcset="/img/loading.gif" lazyload alt="20230323125100.png"><br>最大允许的保活间隔 18H12M15S</p>
+<p>断开连接 DISCONNECT<br>客户端发起, 因此不会发布遗嘱信息<br><img src="/img/20230323125207.png" srcset="/img/loading.gif" lazyload alt="20230323125207.png"><br>超时也会断开连接<br><img src="/img/20230323125237.png" srcset="/img/loading.gif" lazyload alt="20230323125237.png"><br>Broker主动断开<br><img src="/img/20230323125332.png" srcset="/img/loading.gif" lazyload alt="20230323125332.png"></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/MQTT/" class="print-no-link">#MQTT</a>
+      
+        <a href="/tags/IoT/" class="print-no-link">#IoT</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>MQTT入门与进阶 - 1</div>
+      <div>https://bing-zhub.github.io/2023/09/02/MQTT入门与进阶-1/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Bing Zhu</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年9月2日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/09/02/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E4%B8%8E%E8%87%AA%E5%8A%A8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" title="性能优化与自动内存管理">
+                        <span class="hidden-mobile">性能优化与自动内存管理</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <i class="iconfont icon-bug"></i> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
