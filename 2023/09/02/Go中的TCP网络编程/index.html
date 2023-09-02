@@ -8,7 +8,7 @@
 <head>
   <meta charset="UTF-8">
   <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
-  <link rel="icon" href="/img/fluid.png">
+  <link rel="icon" href="/img/favicon.jpg">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   
@@ -16,12 +16,12 @@
   <meta name="author" content="Bing Zhu">
   <meta name="keywords" content="">
   
-    <meta name="description" content="TCP通讯基本原理网络分层  TCP通信过程  Socket 很多系统都提供Socket作为TCP网络连接的抽象 Linux -&gt; Internet domain -&gt; SOCK_STREAM Linux中Socket以”文件描述符”FD作为标识  Socket通信过程 IO模型IO模型指的是同时操作Socket的方案 阻塞同步读写Socket时，线程陷入内核态; 当读写成功后，切换回">
+    <meta name="description" content="TCP通讯基本原理网络分层  TCP通信过程  Socket 很多系统都提供Socket作为TCP网络连接的抽象 Linux -&gt; Internet domain -&gt; SOCK_STRE AM Linux中Socket以”文件描述符”FD作为标识  Socket通信过程 IO模型IO模型指的是同时操作Socket的方案 阻塞同步读写Socket时，线程陷入内核态; 当读写成功后，切换">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Go中的TCP网络编程">
 <meta property="og:url" content="https://bing-zhub.github.io/2023/09/02/Go%E4%B8%AD%E7%9A%84TCP%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/index.html">
 <meta property="og:site_name" content="Bing&#39;s Blog">
-<meta property="og:description" content="TCP通讯基本原理网络分层  TCP通信过程  Socket 很多系统都提供Socket作为TCP网络连接的抽象 Linux -&gt; Internet domain -&gt; SOCK_STREAM Linux中Socket以”文件描述符”FD作为标识  Socket通信过程 IO模型IO模型指的是同时操作Socket的方案 阻塞同步读写Socket时，线程陷入内核态; 当读写成功后，切换回">
+<meta property="og:description" content="TCP通讯基本原理网络分层  TCP通信过程  Socket 很多系统都提供Socket作为TCP网络连接的抽象 Linux -&gt; Internet domain -&gt; SOCK_STRE AM Linux中Socket以”文件描述符”FD作为标识  Socket通信过程 IO模型IO模型指的是同时操作Socket的方案 阻塞同步读写Socket时，线程陷入内核态; 当读写成功后，切换">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230523202540.png">
 <meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230523202721.png">
@@ -33,7 +33,7 @@
 <meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230523214244.png">
 <meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230523230339.png">
 <meta property="article:published_time" content="2023-09-02T07:48:59.000Z">
-<meta property="article:modified_time" content="2023-09-02T07:49:42.623Z">
+<meta property="article:modified_time" content="2023-09-02T08:39:24.554Z">
 <meta property="article:author" content="Bing Zhu">
 <meta property="article:tag" content="Go">
 <meta property="article:tag" content="IT">
@@ -318,7 +318,8 @@
 <h2 id="TCP通信过程"><a href="#TCP通信过程" class="headerlink" title="TCP通信过程"></a>TCP通信过程</h2><p> <img src="/img/Pasted%20image%2020230523202721.png" srcset="/img/loading.gif" lazyload></p>
 <h2 id="Socket"><a href="#Socket" class="headerlink" title="Socket"></a>Socket</h2><ul>
 <li>很多系统都提供Socket作为TCP网络连接的抽象</li>
-<li>Linux -&gt; Internet domain -&gt; SOCK_STREAM</li>
+<li>Linux -&gt; Internet domain -&gt; SOCK_STRE</li>
+<li>AM</li>
 <li>Linux中Socket以”文件描述符”FD作为标识</li>
 </ul>
 <h2 id="Socket通信过程"><a href="#Socket通信过程" class="headerlink" title="Socket通信过程"></a>Socket通信过程</h2><p><img src="/img/Pasted%20image%2020230523202927.png" srcset="/img/loading.gif" lazyload><br><img src="/img/Pasted%20image%2020230523203134.png" srcset="/img/loading.gif" lazyload></p>
