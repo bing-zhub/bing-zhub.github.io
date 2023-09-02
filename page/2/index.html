@@ -255,6 +255,136 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
+        <a href="/2023/09/02/Go%E4%B8%AD%E7%9A%84%E5%85%B6%E5%AE%83%E9%AB%98%E7%BA%A7%E7%89%B9%E6%80%A7/" target="_self">
+          Go中的其它高级特性
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2023/09/02/Go%E4%B8%AD%E7%9A%84%E5%85%B6%E5%AE%83%E9%AB%98%E7%BA%A7%E7%89%B9%E6%80%A7/" target="_self">
+        <div>
+          cgo - Go调用C代码12345678910111213package main/*	int sum(int a,  int b) &#123;		return a + b;	&#125;*/import &quot;C&quot; // 以上述注释为源代码 生成二进制C方法import &quot;fmt&quot;func main() &#123;	fmt.Println(C.sum(1
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2023-09-02 15:50" pubdate>
+              2023-09-02
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Go/">#Go</a>
+            
+              <a href="/tags/IT/">#IT</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2023/09/02/Go%E4%B8%AD%E7%9A%84%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/" target="_self">
+          Go中的内存模型与垃圾回收
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2023/09/02/Go%E4%B8%AD%E7%9A%84%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/" target="_self">
+        <div>
+          栈内存(协程栈, 调用栈)Go协程栈的作用  协程的执行路径 局部变量 函数传参 函数返回值  Go协程栈的位置 Go的协程栈位于堆内存上 Go堆内存位于操作系统虚拟内存上  Go栈帧的结构123456789101112131415package mainfunc sum(a, b int) int &#123;	sum := 0	sum = a + b	return sum&#125;func
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2023-09-02 15:49" pubdate>
+              2023-09-02
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Go/">#Go</a>
+            
+              <a href="/tags/IT/">#IT</a>
+            
+              <a href="/tags/GC/">#GC</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2023/09/02/Go%E4%B8%AD%E7%9A%84TCP%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" target="_self">
+          Go中的TCP网络编程
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2023/09/02/Go%E4%B8%AD%E7%9A%84TCP%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" target="_self">
+        <div>
+          TCP通讯基本原理网络分层  TCP通信过程  Socket 很多系统都提供Socket作为TCP网络连接的抽象 Linux -&gt; Internet domain -&gt; SOCK_STRE AM Linux中Socket以”文件描述符”FD作为标识  Socket通信过程 IO模型IO模型指的是同时操作Socket的方案 阻塞同步读写Socket时，线程陷入内核态; 当读写成功后，切换
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2023-09-02 15:48" pubdate>
+              2023-09-02
+            </time>
+          </div>
+        
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Go/">#Go</a>
+            
+              <a href="/tags/IT/">#IT</a>
+            
+              <a href="/tags/TCP/">#TCP</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
         <a href="/2023/09/02/Go%E4%B8%AD%E7%9A%84Channel/" target="_self">
           Go中的Channel
         </a>
