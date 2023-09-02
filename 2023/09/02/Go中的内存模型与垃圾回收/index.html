@@ -1,0 +1,1015 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Bing Zhu">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="栈内存(协程栈, 调用栈)Go协程栈的作用  协程的执行路径 局部变量 函数传参 函数返回值  Go协程栈的位置 Go的协程栈位于堆内存上 Go堆内存位于操作系统虚拟内存上  Go栈帧的结构123456789101112131415package mainfunc sum(a, b int) int &amp;#123;	sum :&#x3D; 0	sum &#x3D; a + b	return sum&amp;#125;func">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Go中的内存模型与垃圾回收">
+<meta property="og:url" content="https://bing-zhub.github.io/2023/09/02/Go%E4%B8%AD%E7%9A%84%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/index.html">
+<meta property="og:site_name" content="Bing&#39;s Blog">
+<meta property="og:description" content="栈内存(协程栈, 调用栈)Go协程栈的作用  协程的执行路径 局部变量 函数传参 函数返回值  Go协程栈的位置 Go的协程栈位于堆内存上 Go堆内存位于操作系统虚拟内存上  Go栈帧的结构123456789101112131415package mainfunc sum(a, b int) int &amp;#123;	sum :&#x3D; 0	sum &#x3D; a + b	return sum&amp;#125;func">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524101355.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524102337.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524104520.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524111556.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524112720.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524112807.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524113122.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524113424.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524123452.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524124322.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524125614.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524145303.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524145711.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524145837.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524145908.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524150440.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524151440.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524152123.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524152407.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524152451.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524152925.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524152836.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524153024.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524153142.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524155130.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524155350.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524155501.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524155904.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524124322.png">
+<meta property="article:published_time" content="2023-09-02T07:49:23.000Z">
+<meta property="article:modified_time" content="2023-09-02T07:50:01.595Z">
+<meta property="article:author" content="Bing Zhu">
+<meta property="article:tag" content="Go">
+<meta property="article:tag" content="IT">
+<meta property="article:tag" content="GC">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://bing-zhub.github.io/img/Pasted%20image%2020230524101355.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Go中的内存模型与垃圾回收 - Bing&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"bing-zhub.github.io","root":"/","version":"1.9.5-a","typing":{"enable":true,"typeSpeed":120,"cursorChar":"❥","loop":true,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Bing&#39;s Blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Go中的内存模型与垃圾回收"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-09-02 15:49" pubdate>
+          2023年9月2日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          30 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Go中的内存模型与垃圾回收</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="栈内存-协程栈-调用栈"><a href="#栈内存-协程栈-调用栈" class="headerlink" title="栈内存(协程栈, 调用栈)"></a>栈内存(协程栈, 调用栈)</h1><h2 id="Go协程栈的作用"><a href="#Go协程栈的作用" class="headerlink" title="Go协程栈的作用"></a>Go协程栈的作用</h2><p><img src="/img/Pasted%20image%2020230524101355.png" srcset="/img/loading.gif" lazyload></p>
+<ul>
+<li>协程的执行路径</li>
+<li>局部变量</li>
+<li>函数传参</li>
+<li>函数返回值</li>
+</ul>
+<h2 id="Go协程栈的位置"><a href="#Go协程栈的位置" class="headerlink" title="Go协程栈的位置"></a>Go协程栈的位置</h2><ul>
+<li>Go的协程栈位于堆内存上</li>
+<li>Go堆内存位于操作系统虚拟内存上</li>
+</ul>
+<h2 id="Go栈帧的结构"><a href="#Go栈帧的结构" class="headerlink" title="Go栈帧的结构"></a>Go栈帧的结构</h2><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">package</span> main<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">sum</span><span class="hljs-params">(a, b <span class="hljs-type">int</span>)</span></span> <span class="hljs-type">int</span> &#123;<br>	sum := <span class="hljs-number">0</span><br>	sum = a + b<br>	<span class="hljs-keyword">return</span> sum<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> &#123;<br>	a := <span class="hljs-number">3</span><br>	b := <span class="hljs-number">5</span><br>	<span class="hljs-built_in">print</span>(<br>		sum(a, b)<br>	)<br>&#125;<br></code></pre></td></tr></table></figure>
+<p><img src="/img/Pasted%20image%2020230524102337.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="参数传递"><a href="#参数传递" class="headerlink" title="参数传递"></a>参数传递</h2><ul>
+<li>Go使用参数拷贝传递(值传递)</li>
+<li>传递结构体时: 会拷贝结构体中全部内容</li>
+<li>传递结构体指针时: 会拷贝结构体指针</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ul>
+<li>协程栈记录了协程的执行现场</li>
+<li>协程栈还负责记录局部变量，传递参数和返回值</li>
+<li>Go使用参数拷贝传递</li>
+</ul>
+<h2 id="栈的扩增"><a href="#栈的扩增" class="headerlink" title="栈的扩增"></a>栈的扩增</h2><p>初始栈帧大小: 2k~4k </p>
+<h3 id="局部变量太大"><a href="#局部变量太大" class="headerlink" title="局部变量太大"></a>局部变量太大</h3><p>可以通过逃逸分析解决<br>逃逸分析</p>
+<ul>
+<li>不是所有的变量都能放在协程栈上</li>
+<li>栈帧回收后, 需要继续使用的变量</li>
+<li>太大的变量<br>三种情形:</li>
+<li>指针逃逸<br>函数返回了对象的指针<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">a</span><span class="hljs-params">()</span></span> *<span class="hljs-type">int</span> &#123;<br>	v := <span class="hljs-number">0</span><br>	<span class="hljs-keyword">return</span> &amp;v<br>&#125;<br></code></pre></td></tr></table></figure></li>
+<li>空接口逃逸<br>如果函数参数为interface{}, 函数的实参很可能会逃逸<br>因为interface{}类型的函数往往会使用反射(要求对象在堆上)<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs go">i := <span class="hljs-number">1</span><br>fmt.Println(i) <span class="hljs-comment">// 空接口逃逸</span><br></code></pre></td></tr></table></figure></li>
+<li>大变量逃逸<br>过大的变量会导致栈空间不足<br>在64位的机器中, 一般超过64KB的变量会逃逸</li>
+</ul>
+<h3 id="栈帧太多"><a href="#栈帧太多" class="headerlink" title="栈帧太多"></a>栈帧太多</h3><p>栈扩容</p>
+<ul>
+<li>Go初始栈空间大小为2kb</li>
+<li>在函数调用前判断栈空间(morestack)</li>
+<li>必要时对栈进行扩容</li>
+<li>早期使用分段栈, 后期使用连续栈</li>
+</ul>
+<h4 id="分段栈"><a href="#分段栈" class="headerlink" title="分段栈"></a>分段栈</h4><ul>
+<li>1.13之前使用</li>
+<li>优点: 没有空间浪费</li>
+<li>缺点: 栈指针会在不连续的空间跳转<br><img src="/img/Pasted%20image%2020230524104520.png" srcset="/img/loading.gif" lazyload></li>
+</ul>
+<h4 id="连续栈"><a href="#连续栈" class="headerlink" title="连续栈"></a>连续栈</h4><p>直接开辟一块大小为原来两倍的新栈空间, 将老的全部拷贝过来;<br>空间使用率不足1&#x2F;4是缩容, 变为原来1&#x2F;2;</p>
+<ul>
+<li>优点: 空间一直连续</li>
+<li>缺点: 伸缩时开销大</li>
+</ul>
+<h3 id="总结-1"><a href="#总结-1" class="headerlink" title="总结"></a>总结</h3><ul>
+<li>三种特殊情况(逃逸)下, 变量可能会分配到堆上</li>
+<li>1.13之前, Go使用可伸缩的分段栈</li>
+<li>1.14以后, Go使用连续栈, 伸缩时直接使用新栈</li>
+</ul>
+<h1 id="堆内存"><a href="#堆内存" class="headerlink" title="堆内存"></a>堆内存</h1><h2 id="操作系统的虚拟内存"><a href="#操作系统的虚拟内存" class="headerlink" title="操作系统的虚拟内存"></a>操作系统的虚拟内存</h2><ul>
+<li>不是Win的”虚拟内存”(交换区, Linux下的Swap)</li>
+<li>操作系统给应用提供的虚拟内存空间</li>
+<li>背后是物理内存, 也有可能是磁盘</li>
+<li>Linux获取虚拟内存: mmap, madvice<br> <img src="/img/Pasted%20image%2020230524111556.png" srcset="/img/loading.gif" lazyload></li>
+</ul>
+<h2 id="heapArena"><a href="#heapArena" class="headerlink" title="heapArena"></a>heapArena</h2><ul>
+<li>Go每次申请的虚拟内存单元为64MB</li>
+<li>最多有2^20个虚拟内存单元</li>
+<li>所有的heapArena组成了mheap(Go堆内存)</li>
+</ul>
+<h3 id="如何使用"><a href="#如何使用" class="headerlink" title="如何使用"></a>如何使用</h3><ul>
+<li><p>线性分配: 没分配满的时候, 一直向后分配<br><img src="/img/Pasted%20image%2020230524112720.png" srcset="/img/loading.gif" lazyload></p>
+</li>
+<li><p>链表分配: 使用链表串联起所有空闲内存块<br><img src="/img/Pasted%20image%2020230524112807.png" srcset="/img/loading.gif" lazyload></p>
+<blockquote>
+<p>线性分配或者链表分配很容易出现空间碎片</p>
+</blockquote>
+</li>
+<li><p>分级分配<br>找到比要分配对象的最小内存块<br><img src="/img/Pasted%20image%2020230524113122.png" srcset="/img/loading.gif" lazyload><br>外部碎片比较少<br>级 -&gt; mspan</p>
+</li>
+</ul>
+<h2 id="内存管理单元mspan"><a href="#内存管理单元mspan" class="headerlink" title="内存管理单元mspan"></a>内存管理单元mspan</h2><ul>
+<li>根据隔离适应策略，使用内存时的最小单位为mspan</li>
+<li>每个mspan为N个相同大小的“格子” </li>
+<li>Go中一共有67种mspan<br><img src="/img/Pasted%20image%2020230524113424.png" srcset="/img/loading.gif" lazyload></li>
+<li>每个heapArena中的mspan都不确定</li>
+<li>如何快速找到所需的mspan级别? 中心索引mcenteral</li>
+</ul>
+<h2 id="中心索引mcentral"><a href="#中心索引mcentral" class="headerlink" title="中心索引mcentral"></a>中心索引mcentral</h2><ul>
+<li>136个mcentral结构体, 其中<ul>
+<li>68个需要扫描的mspan()</li>
+<li>68个不需要扫描的mspan(常量等)<br><img src="/img/Pasted%20image%2020230524123452.png" srcset="/img/loading.gif" lazyload></li>
+</ul>
+</li>
+</ul>
+<h2 id="mcentral的性能问题"><a href="#mcentral的性能问题" class="headerlink" title="mcentral的性能问题"></a>mcentral的性能问题</h2><ul>
+<li>mcentral实际是中心索引, 使用互斥锁保护</li>
+<li>高并发场景下, 锁冲突问题严重</li>
+<li>参考协程GMP模型, 增加线程本地缓存</li>
+</ul>
+<h2 id="线程缓存mcache"><a href="#线程缓存mcache" class="headerlink" title="线程缓存mcache"></a>线程缓存mcache</h2><ul>
+<li>每个P拥有一个mcache</li>
+<li>一个mcache拥有136个mspan, 其中<ul>
+<li>68个需要GC扫描的mspan</li>
+<li>68个不需要GC扫描的mspan<br><img src="/img/Pasted%20image%2020230524124322.png" srcset="/img/loading.gif" lazyload></li>
+</ul>
+</li>
+</ul>
+<h2 id="总结-2"><a href="#总结-2" class="headerlink" title="总结"></a>总结</h2><ul>
+<li>Go魔方TCmalloc, 建立了自己的堆内存架构</li>
+<li>使用heapArena向操作系统申请内存</li>
+<li>使用heapArena时, 以mspan为单位, 防止碎片化</li>
+<li>mcentral是mspan们的中心索引</li>
+<li>mcache记录了分配给各个P的本地mspan</li>
+</ul>
+<h2 id="对象分级"><a href="#对象分级" class="headerlink" title="对象分级"></a>对象分级</h2><ul>
+<li>Tiny微对象(0, 16B) 无指针</li>
+<li>Small小对象<code>[16B, 32KB]</code></li>
+<li>Large大对象(32KB, +inf)</li>
+</ul>
+<p>微小对象分配到普通mspan, class 1 ~ class 67<br>大对象量身定做mspan</p>
+<h2 id="微小对象分配"><a href="#微小对象分配" class="headerlink" title="微小对象分配"></a>微小对象分配</h2><ul>
+<li>从mcache拿到2级mspan</li>
+<li>将多个微对象合并成一个16Byte存入<br><img src="/img/Pasted%20image%2020230524125614.png" srcset="/img/loading.gif" lazyload></li>
+</ul>
+<h2 id="mcache的替换"><a href="#mcache的替换" class="headerlink" title="mcache的替换"></a>mcache的替换</h2><ul>
+<li>mcache中, 每个级别的mspan只有一个</li>
+<li>当mspan满了之后, 会从mcentral中换一个新的</li>
+</ul>
+<h2 id="mcentral的扩容"><a href="#mcentral的扩容" class="headerlink" title="mcentral的扩容"></a>mcentral的扩容</h2><ul>
+<li>mcentral中, 只有有限数量的mspan</li>
+<li>当mspan缺少时, 会从heapArena开辟新的mspan</li>
+</ul>
+<h2 id="大对象分配"><a href="#大对象分配" class="headerlink" title="大对象分配"></a>大对象分配</h2><ul>
+<li>直接从heapArena开辟0级的mspan</li>
+<li>0级的mspan为大对象定制</li>
+</ul>
+<h2 id="heapArena的扩容"><a href="#heapArena的扩容" class="headerlink" title="heapArena的扩容"></a>heapArena的扩容</h2><ul>
+<li>当heapArena空间不足时</li>
+<li>向操作系统申请新的heapArena</li>
+</ul>
+<h2 id="总结-3"><a href="#总结-3" class="headerlink" title="总结"></a>总结</h2><ul>
+<li>Go将对象按照大小分为3种</li>
+<li>微小对象使用mcache</li>
+<li>mcache中的mspan填满后, 与mcentral交换新的</li>
+<li>mcentral不足时, 在heapArena开辟新的mspan</li>
+<li>大对象直接在heapArena开辟新的mspan</li>
+</ul>
+<h1 id="垃圾回收"><a href="#垃圾回收" class="headerlink" title="垃圾回收"></a>垃圾回收</h1><h2 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h2><ul>
+<li>“标记-清除”</li>
+<li>“标记-整理”</li>
+<li>复制</li>
+</ul>
+<h2 id="标记清除"><a href="#标记清除" class="headerlink" title="标记清除"></a>标记清除</h2><p><img src="/img/Pasted%20image%2020230524145303.png" srcset="/img/loading.gif" lazyload><br>标记之后, 清除即可.</p>
+<h2 id="标记整理"><a href="#标记整理" class="headerlink" title="标记整理"></a>标记整理</h2><p><img src="/img/Pasted%20image%2020230524145711.png" srcset="/img/loading.gif" lazyload><br>标记完成后, 进行整理, 都向前放.</p>
+<h2 id="标记复制"><a href="#标记复制" class="headerlink" title="标记复制"></a>标记复制</h2><p><img src="/img/Pasted%20image%2020230524145837.png" srcset="/img/loading.gif" lazyload><br>把有用的复制到新的地方<br><img src="/img/Pasted%20image%2020230524145908.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="Go中"><a href="#Go中" class="headerlink" title="Go中"></a>Go中</h2><ul>
+<li>由于堆内存结构的独特优势, 选择最简单的标记-清除</li>
+<li>找到有引用的对象, 剩下的就是没有引用的</li>
+</ul>
+<h2 id="如何查找"><a href="#如何查找" class="headerlink" title="如何查找"></a>如何查找</h2><p>Root Set(GC Root)</p>
+<ul>
+<li>被栈上的指针引用</li>
+<li>被全局变量指针引用</li>
+<li>被寄存器中的指针引用<br>可达性分析标记法 - Root节点进行广度优先搜索<br><img src="/img/Pasted%20image%2020230524150440.png" srcset="/img/loading.gif" lazyload><br>只有G, H会被回收</li>
+</ul>
+<h2 id="串行GC"><a href="#串行GC" class="headerlink" title="串行GC"></a>串行GC</h2><p>步骤</p>
+<ol>
+<li>Stop The World, 暂停其它所有协程</li>
+<li>通过可达性分析, 找到无用的堆内存</li>
+<li>释放堆内存</li>
+<li>恢复所有其它协程<br>问题</li>
+</ol>
+<ul>
+<li>串行对业务性能影响较大</li>
+</ul>
+<h2 id="总结-4"><a href="#总结-4" class="headerlink" title="总结"></a>总结</h2><ul>
+<li>从GC Root出发，寻找被引用对象</li>
+<li>没有被引用的就是无用对象</li>
+<li>串行GC需要STW,对性能景影响大</li>
+</ul>
+<h2 id="并发GC"><a href="#并发GC" class="headerlink" title="并发GC"></a>并发GC</h2><h3 id="三色标记法"><a href="#三色标记法" class="headerlink" title="三色标记法"></a>三色标记法</h3><ul>
+<li>黑色: 有用, 已经分析扫描</li>
+<li>灰色: 有用, 还未分析扫描</li>
+<li>白色: 暂时无用</li>
+</ul>
+<h4 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h4><ol>
+<li>起初所有的对象都是白色的<br><img src="/img/Pasted%20image%2020230524151440.png" srcset="/img/loading.gif" lazyload></li>
+<li>从根对象出发扫描可达对象, 标记为灰色<br><img src="/img/Pasted%20image%2020230524152123.png" srcset="/img/loading.gif" lazyload></li>
+<li>扫描灰色对象, 将其引用的对象标记为灰色, 自身标记为黑色<br><img src="/img/Pasted%20image%2020230524152407.png" srcset="/img/loading.gif" lazyload><br><img src="/img/Pasted%20image%2020230524152451.png" srcset="/img/loading.gif" lazyload></li>
+<li>清除白色对象.</li>
+<li>再次标记时, 所有对象恢复为白色.</li>
+</ol>
+<h3 id="并发标记问题-删除"><a href="#并发标记问题-删除" class="headerlink" title="并发标记问题(删除)"></a>并发标记问题(删除)</h3><ul>
+<li>并发标记进行中<br><img src="/img/Pasted%20image%2020230524152925.png" srcset="/img/loading.gif" lazyload></li>
+<li>在业务协程中, B指向C的指针释放<br><img src="/img/Pasted%20image%2020230524152836.png" srcset="/img/loading.gif" lazyload></li>
+<li>在业务协程中, E的一个指针成员指向了C<br><img src="/img/Pasted%20image%2020230524153024.png" srcset="/img/loading.gif" lazyload></li>
+<li>持续扫描<br><img src="/img/Pasted%20image%2020230524153142.png" srcset="/img/loading.gif" lazyload><br><strong>C将会被错误清除</strong> -&gt; Yuasa删除屏障</li>
+</ul>
+<h3 id="Yuasa删除屏障"><a href="#Yuasa删除屏障" class="headerlink" title="Yuasa删除屏障"></a>Yuasa删除屏障</h3><ul>
+<li>并发标记时, 对指针释放的白色对象置为灰色<br><img src="/img/Pasted%20image%2020230524155130.png" srcset="/img/loading.gif" lazyload></li>
+<li>删除屏障: C被置为灰色 </li>
+<li>删除屏障可以杜绝在GC标记中释放的指针被清理</li>
+</ul>
+<h3 id="并发标记问题-插入"><a href="#并发标记问题-插入" class="headerlink" title="并发标记问题(插入)"></a>并发标记问题(插入)</h3><ul>
+<li>并发标记进行中<br><img src="/img/Pasted%20image%2020230524155350.png" srcset="/img/loading.gif" lazyload></li>
+<li>在业务协程中, E的一个指针成员指向了C<br><img src="/img/Pasted%20image%2020230524155501.png" srcset="/img/loading.gif" lazyload><br>此时则出现了问题, C会被错误删除 -&gt; Dijkstra插入屏障</li>
+</ul>
+<h3 id="Dijkstra插入屏障"><a href="#Dijkstra插入屏障" class="headerlink" title="Dijkstra插入屏障"></a>Dijkstra插入屏障</h3><p>并发标记时, 对指针新指向的白色对象置为灰色<br><img src="/img/Pasted%20image%2020230524155904.png" srcset="/img/loading.gif" lazyload><br>插入屏障可以杜绝在GC标记中被插入的指针被清理</p>
+<h3 id="混合屏障"><a href="#混合屏障" class="headerlink" title="混合屏障"></a>混合屏障</h3><ul>
+<li>被删除的堆对象被标记为灰色</li>
+<li>被添加的堆对象标记为灰色</li>
+</ul>
+<h2 id="总结-5"><a href="#总结-5" class="headerlink" title="总结"></a>总结</h2><ul>
+<li>并发垃圾回收的关键在于标记安全</li>
+<li>混合屏障机制兼顾了安全与效率</li>
+</ul>
+<h1 id="如何优化GC效率"><a href="#如何优化GC效率" class="headerlink" title="如何优化GC效率"></a>如何优化GC效率</h1><h2 id="GC触发的时机"><a href="#GC触发的时机" class="headerlink" title="GC触发的时机"></a>GC触发的时机</h2><h3 id="系统定时触发"><a href="#系统定时触发" class="headerlink" title="系统定时触发"></a>系统定时触发</h3><ul>
+<li>sysmon定时检查(g0协程)</li>
+<li>如果2分钟内没有过GC, 触发</li>
+<li>谨慎调整</li>
+</ul>
+<h3 id="用户显式触发"><a href="#用户显式触发" class="headerlink" title="用户显式触发"></a>用户显式触发</h3><ul>
+<li>用户调用runtime.GC方法</li>
+<li>并不推荐调用</li>
+</ul>
+<h3 id="申请内存时触发"><a href="#申请内存时触发" class="headerlink" title="申请内存时触发"></a>申请内存时触发</h3><ul>
+<li>给对象申请堆空间时, 可能导致GC</li>
+</ul>
+<h2 id="GC优化原则"><a href="#GC优化原则" class="headerlink" title="GC优化原则"></a>GC优化原则</h2><ul>
+<li>尽量少在堆上产生垃圾<ul>
+<li>内存池化</li>
+<li>减少逃逸</li>
+<li>使用空结构体</li>
+</ul>
+</li>
+</ul>
+<h3 id="内存池化"><a href="#内存池化" class="headerlink" title="内存池化"></a>内存池化</h3><ul>
+<li>缓存性质的对象</li>
+<li>频繁创建和删除</li>
+<li>使用内存池, 不GC</li>
+</ul>
+<h3 id="减少逃逸"><a href="#减少逃逸" class="headerlink" title="减少逃逸"></a>减少逃逸</h3><ul>
+<li>逃逸会使原本在栈上的对象进入堆中</li>
+<li>fmt包</li>
+<li>返回了指针而不是拷贝</li>
+</ul>
+<h3 id="使用空结构体"><a href="#使用空结构体" class="headerlink" title="使用空结构体"></a>使用空结构体</h3><ul>
+<li>空结构体指向一个固定地址</li>
+<li>不占用堆空间</li>
+<li>比如channel传递空结构体</li>
+</ul>
+<h3 id="GC分析工具"><a href="#GC分析工具" class="headerlink" title="GC分析工具"></a>GC分析工具</h3><ul>
+<li>go tool pprof</li>
+<li>go tool trace</li>
+<li>go build -gcflags&#x3D;” -m”</li>
+<li>GODEBUG&#x3D;”gctrace&#x3D;1”</li>
+</ul>
+<h2 id="总结-6"><a href="#总结-6" class="headerlink" title="总结"></a>总结</h2><ul>
+<li>GC主要由系统定时触发或者申请内存触发</li>
+<li>GC优化的原则是减少在堆上产生垃圾</li>
+<li>使用GC分析工具可以帮助分析GC问题</li>
+</ul>
+<h1 id="总结-7"><a href="#总结-7" class="headerlink" title="总结"></a>总结</h1><h2 id="协程栈"><a href="#协程栈" class="headerlink" title="协程栈"></a>协程栈</h2><ul>
+<li>协程栈记录了协程的执行现场</li>
+<li>G0协程栈位于G0堆内存上</li>
+<li>Go使用参数拷贝传递</li>
+<li>3种特殊情况下，变量可能会逃逸到堆上</li>
+<li>1.14以后，G0使用连续栈，伸缩时直接使用新栈</li>
+</ul>
+<h2 id="堆内存结构"><a href="#堆内存结构" class="headerlink" title="堆内存结构"></a>堆内存结构</h2><p><img src="/img/Pasted%20image%2020230524124322.png" srcset="/img/loading.gif" lazyload></p>
+<ul>
+<li>Go模仿TCmalloc,建立了自己的堆内存架构</li>
+<li>使用heapArena向操作系统申请内存</li>
+<li>使用heapArena时，以mspan为单位，防止碎片化</li>
+<li>mcentral是mspan们的中心索引</li>
+<li>mcache记录了分配给各个P的本地mspan</li>
+</ul>
+<h3 id="堆内存分配"><a href="#堆内存分配" class="headerlink" title="堆内存分配"></a>堆内存分配</h3><ul>
+<li>G0将对象按照大小分为3种</li>
+<li>微小对象使用mcache</li>
+<li>mcache中的mspan填满后，与mcentral交换新的</li>
+<li>mcentral不足时，在heapArena开辟新的mspan</li>
+<li>大对象直接在heapArena开辟新的mspan</li>
+</ul>
+<h2 id="堆内存回收-GC"><a href="#堆内存回收-GC" class="headerlink" title="堆内存回收(GC)"></a>堆内存回收(GC)</h2><ul>
+<li>“标记-清除”法<ul>
+<li>标记有用对象，清除无用对象</li>
+</ul>
+</li>
+<li>“可达性分析”标记法<ul>
+<li>从GC Root出发，寻找被引用对象</li>
+</ul>
+</li>
+</ul>
+<h2 id="并发GC-1"><a href="#并发GC-1" class="headerlink" title="并发GC"></a>并发GC</h2><ul>
+<li>并发垃圾回收的关键在于标记安全</li>
+<li>混合屏障机制兼顾了安全与效率</li>
+</ul>
+<h2 id="GC优化"><a href="#GC优化" class="headerlink" title="GC优化"></a>GC优化</h2><ul>
+<li>GC主要由系统定时触发或者申请内存触发</li>
+<li>GC优化的原则是减少在堆上产生垃圾</li>
+<li>使用GC分析工具可以帮助分析GC问题</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Go/" class="print-no-link">#Go</a>
+      
+        <a href="/tags/IT/" class="print-no-link">#IT</a>
+      
+        <a href="/tags/GC/" class="print-no-link">#GC</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Go中的内存模型与垃圾回收</div>
+      <div>https://bing-zhub.github.io/2023/09/02/Go中的内存模型与垃圾回收/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Bing Zhu</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年9月2日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2023/09/02/Go%E4%B8%AD%E7%9A%84%E5%85%B6%E5%AE%83%E9%AB%98%E7%BA%A7%E7%89%B9%E6%80%A7/" title="Go中的其它高级特性">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Go中的其它高级特性</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/09/02/Go%E4%B8%AD%E7%9A%84TCP%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" title="Go中的TCP网络编程">
+                        <span class="hidden-mobile">Go中的TCP网络编程</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <i class="iconfont icon-bug"></i> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
