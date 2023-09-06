@@ -1,0 +1,820 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/favicon.jpg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Bing Zhu">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="如何保证Redis中只存放1%的热点商品数据?  LRU算法 设置key的过期时间  缓存例子 无缓存的Web服务器以Spring Boot为Web服务框架模板引擎: 解析HTML中的动态数据控制器(Controller): 接收并解析前端请求, 调用业务层获取数据, 并将数据给模板引擎业务层(Service): 调用Dao拿到数据库数据, 并根据业务计算需要的数据数据访问层(Dao): 操作数据">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis - 缓存应用">
+<meta property="og:url" content="https://bing-zhub.github.io/2023/09/05/Redis-%E7%BC%93%E5%AD%98%E5%BA%94%E7%94%A8/index.html">
+<meta property="og:site_name" content="Bing&#39;s Blog">
+<meta property="og:description" content="如何保证Redis中只存放1%的热点商品数据?  LRU算法 设置key的过期时间  缓存例子 无缓存的Web服务器以Spring Boot为Web服务框架模板引擎: 解析HTML中的动态数据控制器(Controller): 接收并解析前端请求, 调用业务层获取数据, 并将数据给模板引擎业务层(Service): 调用Dao拿到数据库数据, 并根据业务计算需要的数据数据访问层(Dao): 操作数据">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://bing-zhub.github.io/img/cache_all.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230518164742.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230518172535.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230518173137.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230518204739.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230518204857.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230518204927.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230518205350.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230518205546.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230518205707.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230518205914.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230518205944.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230518210424.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230518212010.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230518212823.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230518213555.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230518213741.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230518214020.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/%E6%97%A0%E6%A0%87%E9%A2%98.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230518221200.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230518224634.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230519155128.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230519161509.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230519161707.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230519161957.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230519172929.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230519175021.png">
+<meta property="og:image" content="https://bing-zhub.github.io/img/20230519161152.png">
+<meta property="article:published_time" content="2023-09-05T14:02:04.000Z">
+<meta property="article:modified_time" content="2023-09-06T01:15:01.105Z">
+<meta property="article:author" content="Bing Zhu">
+<meta property="article:tag" content="Redis">
+<meta property="article:tag" content="缓存">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://bing-zhub.github.io/img/cache_all.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Redis - 缓存应用 - Bing&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"bing-zhub.github.io","root":"/","version":"1.9.5-a","typing":{"enable":true,"typeSpeed":120,"cursorChar":"❥","loop":true,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+    <!-- Google tag (gtag.js) -->
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        Fluid.utils.createScript("https://www.googletagmanager.com/gtag/js?id=", function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            dataLayer.push(arguments);
+          }
+          gtag('js', new Date());
+          gtag('config', '');
+        });
+      }
+    </script>
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Bing&#39;s Blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Redis - 缓存应用"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-09-05 22:02" pubdate>
+          2023年9月5日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          8.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          72 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Redis - 缓存应用</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p><img src="/img/cache_all.png" srcset="/img/loading.gif" lazyload alt="缓存一致性与缓存异常"><br>如何保证Redis中只存放1%的热点商品数据?</p>
+<ol>
+<li>LRU算法</li>
+<li>设置key的过期时间</li>
+</ol>
+<h2 id="缓存例子"><a href="#缓存例子" class="headerlink" title="缓存例子"></a>缓存例子</h2><p> 无缓存的Web服务器<img src="/img/20230518164742.png" srcset="/img/loading.gif" lazyload alt="20230518164742.png"><br>以Spring Boot为Web服务框架<br>模板引擎: 解析HTML中的动态数据<br>控制器(Controller): 接收并解析前端请求, 调用业务层获取数据, 并将数据给模板引擎<br>业务层(Service): 调用Dao拿到数据库数据, 并根据业务计算需要的数据<br>数据访问层(Dao): 操作数据库(MySQL)</p>
+<h3 id="Spring-Boot操作Redis"><a href="#Spring-Boot操作Redis" class="headerlink" title="Spring Boot操作Redis"></a>Spring Boot操作Redis</h3><p>RedisTemplate<br>三个客户端:</p>
+<ol>
+<li>Jedis<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 建立TCP连接</span><br><span class="hljs-type">Jedis</span> <span class="hljs-variable">jedis</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Jedis</span>(<span class="hljs-string">&quot;127.0.0.1&quot;</span>, <span class="hljs-number">6379</span>);<br>jedis.auth(<span class="hljs-string">&quot;123456&quot;</span>);<br>jedis.select(<span class="hljs-number">2</span>);<br><span class="hljs-comment">// 操作Redis</span><br>jedis.set(<span class="hljs-string">&quot;name&quot;</span>, <span class="hljs-string">&quot;bing&quot;</span>);<br><span class="hljs-type">String</span> <span class="hljs-variable">res</span> <span class="hljs-operator">=</span> jedis.get(<span class="hljs-string">&quot;name&quot;</span>);<br>System.out.println(res);<br><span class="hljs-comment">// 释放连接</span><br>jedis.close();<br></code></pre></td></tr></table></figure></li>
+<li>Lettuce<br>可同步, 也可以异步</li>
+<li>Redisson</li>
+</ol>
+<p>Spring Boot中的RedisTemplate封装了Jedis和Lettuce两种客户端, 默认使用Lettuce</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Autowired</span><br><span class="hljs-keyword">private</span> StringRedisTemplate stringRedisTemplate;<br><br><span class="hljs-comment">// 操作字符串</span><br>stringRedisTemplate.opsForValue().set(<span class="hljs-string">&quot;name&quot;</span>, <span class="hljs-string">&quot;bing&quot;</span>);<br><span class="hljs-type">String</span> <span class="hljs-variable">val</span> <span class="hljs-operator">=</span> stringRedisTemplate.opsForValue().get(<span class="hljs-string">&quot;name&quot;</span>);<br>System.out.println(val);<br><br><span class="hljs-comment">// 操作list, opsForType</span><br>stringRedisTemplate.optsForList().rightPushAll(<span class="hljs-string">&quot;list1&quot;</span>, <span class="hljs-string">&quot;a&quot;</span>, <span class="hljs-string">&quot;b&quot;</span>, <span class="hljs-string">&quot;c&quot;</span>);<br><span class="hljs-type">String</span> <span class="hljs-variable">res</span> <span class="hljs-operator">=</span> stringRedisTemplate.opsForList().rightPop(<span class="hljs-string">&quot;list1&quot;</span>);<br>System.out.println(res);<br></code></pre></td></tr></table></figure>
+<h3 id="引入Redis作为MySQL缓存"><a href="#引入Redis作为MySQL缓存" class="headerlink" title="引入Redis作为MySQL缓存"></a>引入Redis作为MySQL缓存</h3><p><img src="/img/20230518172535.png" srcset="/img/loading.gif" lazyload alt="20230518172535.png"><br>数据库容易达到瓶颈, 引入Redis后<br><img src="/img/20230518173137.png" srcset="/img/loading.gif" lazyload alt="20230518173137.png"></p>
+<ul>
+<li>以JSON string进行存储<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 1. 先容Redis缓存查询</span><br><span class="hljs-type">String</span> <span class="hljs-variable">key</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;shop:&quot;</span> + id;<br><span class="hljs-type">String</span> <span class="hljs-variable">shopJson</span> <span class="hljs-operator">=</span> stringRedisTemplate.opsForValue().get(key);<br><span class="hljs-keyword">if</span> (shopJson != <span class="hljs-literal">null</span> &amp;&amp; !shopJson.isEmpty()) &#123;<br>	<span class="hljs-keyword">return</span> JSON.parseObject(shopJson, Shop.class);<br>&#125;<br><span class="hljs-comment">// 2. 未命中, 从数据库查询</span><br><span class="hljs-type">Shop</span> <span class="hljs-variable">shop</span> <span class="hljs-operator">=</span> shopDao.queryById(id);<br><span class="hljs-keyword">if</span> (shop == <span class="hljs-literal">null</span>) <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;<br><span class="hljs-comment">// 3. 将数据设置到redis中</span><br>stringRedisTemplate.opsForValue().set(key, JSON.toJSONString(shop));<br><span class="hljs-keyword">return</span> shop;<br></code></pre></td></tr></table></figure>
+每次访问都要访问到大多数字段; 对象里字段不会高频率更新; 对象数据比较大;</li>
+<li>以Hash进行存储<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 1. 先容Redis缓存查询</span><br><span class="hljs-type">String</span> <span class="hljs-variable">key</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;shop:&quot;</span> + id;<br>Map&lt;Object, Object&gt; map = stringRedisTemplate.opsForHash().entries(key);<br><span class="hljs-keyword">if</span> (map != <span class="hljs-literal">null</span> &amp;&amp; !map.isEmpty()) &#123;<br>	<span class="hljs-keyword">return</span> Shop.buildFromMap(map);<br>&#125;<br><span class="hljs-comment">// 2. 未命中, 从数据库查询</span><br><span class="hljs-type">Shop</span> <span class="hljs-variable">shop</span> <span class="hljs-operator">=</span> shopDao.queryById(id);<br><span class="hljs-keyword">if</span> (shop == <span class="hljs-literal">null</span>) <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;<br><span class="hljs-comment">// 3. 将数据设置到redis中</span><br>stringRedisTemplate.opsForHash().putAll(key, shop.genMap()); <span class="hljs-comment">// HMSET</span><br><span class="hljs-keyword">return</span> shop;<br></code></pre></td></tr></table></figure>
+每次访问都要访问到个别数字段; 对象里字段会高频率更新; 对象数据比较小, hash会采用ziplist的压缩结构, 空间占用和string一样;</li>
+</ul>
+<h2 id="数据一致性问题"><a href="#数据一致性问题" class="headerlink" title="数据一致性问题"></a>数据一致性问题</h2><p>只更新数据库, 但未更新缓存, 就会存在不一致问题</p>
+<h3 id="定时器-定时同步MySQL数据到Redis中"><a href="#定时器-定时同步MySQL数据到Redis中" class="headerlink" title="定时器, 定时同步MySQL数据到Redis中"></a>定时器, 定时同步MySQL数据到Redis中</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Component</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">SyncShops2RedisTask</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">ApplicationRunner</span> &#123;<br>	<span class="hljs-meta">@Override</span><br>	<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">(ApplicationArguments args)</span> <span class="hljs-keyword">throws</span> Exception &#123;<br>		logger.info(<span class="hljs-string">&quot;[启动] 同步商铺数据定时任务&quot;</span>);<br>		<span class="hljs-comment">// quartz</span><br>		<span class="hljs-type">TimerTask</span>  <span class="hljs-variable">task</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">TimerTask</span>() &#123;<br>			<span class="hljs-meta">@Override</span><br>			<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>				logger.info(<span class="hljs-string">&quot;[开始执行] 同步商铺数据&quot;</span>);<br>				<span class="hljs-comment">// 1. 从MySQL拿到所有的商铺数据</span><br>				List&lt;Shop&gt; shops = shopDao.queryAll();<br>				<span class="hljs-comment">// 2. 写到Redis缓存</span><br>				shops.forEach(shop -&gt; &#123;<br>					stringRedisTemplate<br>						.opsForValue()<br>						.set(<span class="hljs-string">&quot;shop:&quot;</span>+shop.getId(), JSON.toJSONString(shop));<br>				&#125;);<br>				logger.info(<span class="hljs-string">&quot;[结束执行] 同步商铺数据&quot;</span>);<br>			&#125;<br>		&#125;<br>		<span class="hljs-keyword">new</span> <span class="hljs-title class_">Timer</span>().sceduleAtFixedRate(task, <span class="hljs-number">1000</span>, <span class="hljs-number">60</span> * <span class="hljs-number">1000</span>)<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>适合数据量比较少的场景.<br>实时性不好, 在定时器间隔内, 仍不会更新缓存, 存在60s内的数据不一致.</p>
+<h3 id="同时更新数据库和Redis缓存-“并发双写”"><a href="#同时更新数据库和Redis缓存-“并发双写”" class="headerlink" title="同时更新数据库和Redis缓存, “并发双写”"></a>同时更新数据库和Redis缓存, “并发双写”</h3><p>在更新MySQL的同时, 更新缓存</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 1. 更新MySQL</span><br><span class="hljs-comment">// 1.1 评论数加一</span><br>shopDao.incCommentsById(comment.getShopId());<br><span class="hljs-comment">// 1.2 将评论插入评论表</span><br>commentDao.insert(comment);<br><br><span class="hljs-comment">// 2. 更新redis缓存</span><br><span class="hljs-type">String</span> <span class="hljs-variable">key</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;shop:&quot;</span> + comment.getShopId();<br><span class="hljs-type">String</span> <span class="hljs-variable">shopJson</span> <span class="hljs-operator">=</span> stringRedisTemplate.opsForValue().get(key);<br><span class="hljs-keyword">if</span> (shopJson != <span class="hljs-literal">null</span> &amp;&amp; !shopJson.isEmpty()) &#123;<br>	<span class="hljs-type">Shop</span> <span class="hljs-variable">shop</span> <span class="hljs-operator">=</span> JSON.parseObject(shopJson, Shop.class);<br>	shop.SetComments(shop.getComments() + <span class="hljs-number">1</span>);<br>	stringRedisTemplate.opsForValue().set(key, JSON.toJSONString(shop));<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>单线程无所谓, 但高并发场景下就存在一致性问题: 并发双写<br><img src="/img/20230518204739.png" srcset="/img/loading.gif" lazyload alt="20230518204739.png"><br>加锁, 会损失性能.</p>
+<h3 id="删除缓存"><a href="#删除缓存" class="headerlink" title="删除缓存"></a>删除缓存</h3><p><img src="/img/20230518204857.png" srcset="/img/loading.gif" lazyload alt="20230518204857.png"><br><img src="/img/20230518204927.png" srcset="/img/loading.gif" lazyload alt="20230518204927.png"></p>
+<h4 id="先删除Redis缓存-再更新数据库-“延迟双删”"><a href="#先删除Redis缓存-再更新数据库-“延迟双删”" class="headerlink" title="先删除Redis缓存, 再更新数据库, “延迟双删”"></a>先删除Redis缓存, 再更新数据库, “延迟双删”</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 1. 先删除缓存</span><br><span class="hljs-type">String</span> <span class="hljs-variable">key</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;shop:&quot;</span> + comment.getShopId();<br>stringRedisTemplate.delete(key);<br><span class="hljs-comment">// 2. 更新MySQL</span><br><span class="hljs-comment">// 2.1 评论数加一</span><br>shopDao.incCommentsById(comment.getShopId());<br><span class="hljs-comment">// 2.2 将评论插入评论表</span><br>commentDao.insert(comment);<br></code></pre></td></tr></table></figure>
+<p>再次查询的时候, 缓存内无相关内容, 会进行缓存重建.<br><img src="/img/20230518205350.png" srcset="/img/loading.gif" lazyload alt="20230518205350.png"><br>此时一致<br> <img src="/img/20230518205546.png" srcset="/img/loading.gif" lazyload alt="20230518205546.png"><br> 此时数据不一致, 可以通过双删解决, 虽然也存在不一致, 但情况好很多.<br> <img src="/img/20230518205707.png" srcset="/img/loading.gif" lazyload alt="20230518205707.png"><br> 但如果重建缓存时间比较长, 也会存在不一致情况<br> <img src="/img/20230518205914.png" srcset="/img/loading.gif" lazyload alt="20230518205914.png"><br> 此时可以通过, 延迟双删解决, 延迟时间要大于线程2读取MySQL + 写入缓存的时间, 经验值1~5s.<br> <img src="/img/20230518205944.png" srcset="/img/loading.gif" lazyload alt="20230518205944.png"><br> 一般不会使用, 高并发下做延迟太损失性能.</p>
+<h4 id="先更新数据库-再删除Redis缓存-“异步更新缓存”"><a href="#先更新数据库-再删除Redis缓存-“异步更新缓存”" class="headerlink" title="先更新数据库, 再删除Redis缓存, “异步更新缓存”"></a>先更新数据库, 再删除Redis缓存, “异步更新缓存”</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 1. 更新MySQL</span><br><span class="hljs-comment">// 1.1 评论数加一</span><br>shopDao.incCommentsById(comment.getShopId());<br><span class="hljs-comment">// 1.2 将评论插入评论表</span><br>commentDao.insert(comment);<br><span class="hljs-comment">// 2. 删除缓存</span><br><span class="hljs-type">String</span> <span class="hljs-variable">key</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;shop:&quot;</span> + comment.getShopId();<br>stringRedisTempla te.delete(key);<br></code></pre></td></tr></table></figure>
+<p><img src="/img/20230518210424.png" srcset="/img/loading.gif" lazyload alt="20230518210424.png"><br>会有较短时间(几百毫秒)内的数据不一致.<br>先删除缓存, 数据不一致的情况比较严重写. 所以一般使用后删除缓存. 但在删除缓存失败时也会存在问题<br><img src="/img/20230518212010.png" srcset="/img/loading.gif" lazyload alt="20230518212010.png"><br>这种情况, 可以通过给key添加过期时间解决.<br><img src="/img/20230518212823.png" srcset="/img/loading.gif" lazyload alt="20230518212823.png"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs java">stringRedisTemplate.opsForValue()<br>	.set(key, JSON.toJSONString(shop), <span class="hljs-number">30</span>, TimeUnit.MINUTES);<br></code></pre></td></tr></table></figure>
+<p>最长也就存在30分钟, 但概率极小, 但也不能忍受, 可以通过重试删除缓存.<br><img src="/img/20230518213555.png" srcset="/img/loading.gif" lazyload alt="20230518213555.png"><br>但不能立马重试删除, 原因如下:</p>
+<ol>
+<li>立即重试大概率还会失败</li>
+<li>重试次数的设置</li>
+<li>重试会一直占用线程资源, 无法服务其他客户端请求<br>所以可以采用异步重试来解决, 或者直接发给消息队列, 让消息队列删除, 该线程不删除缓存.<br><img src="/img/20230518213741.png" srcset="/img/loading.gif" lazyload alt="20230518213741.png"><br>但也不完美, 较为完美的方式是订阅MySQL的binlog, 后再删除缓存.<br><img src="/img/20230518214020.png" srcset="/img/loading.gif" lazyload alt="20230518214020.png"><br>异步删除缓存期间, 数据会有短时间的不一致.</li>
+</ol>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p><img src="/img/%E6%97%A0%E6%A0%87%E9%A2%98.png" srcset="/img/loading.gif" lazyload alt="总结"></p>
+<h2 id="缓存异常问题"><a href="#缓存异常问题" class="headerlink" title="缓存异常问题"></a>缓存异常问题</h2><h3 id="缓存穿透-布隆过滤器"><a href="#缓存穿透-布隆过滤器" class="headerlink" title="缓存穿透, 布隆过滤器"></a>缓存穿透, 布隆过滤器</h3><p>访问一个缓存和数据库都不存在的key,此时请求会直接访问到数据库并且查不到数据，没法写缓存，所以下次请求同样会访问到数据库上.<br>此时，缓存起不到作用，请求每次都会走到数据库，流量大时数据库可能会被打挂。此时缓存就好像被”穿透”了一样，起不到任何作用<br>三种方案</p>
+<h4 id="参数校验"><a href="#参数校验" class="headerlink" title="参数校验"></a>参数校验</h4><p>有用户恶意攻击, 自增ID容易被攻击, 设计成不规则的会好些.</p>
+<h4 id="缓存空值"><a href="#缓存空值" class="headerlink" title="缓存空值"></a>缓存空值</h4><p>访问缓存和数据库都没有的值时, 会将空值放入缓存<br><img src="/img/20230518221200.png" srcset="/img/loading.gif" lazyload alt="20230518221200.png"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 1. 先从Redis缓存查询</span><br><span class="hljs-type">String</span> <span class="hljs-variable">key</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;shop:&quot;</span> + id;<br><span class="hljs-type">String</span> <span class="hljs-variable">shopJson</span> <span class="hljs-operator">=</span> stringRedisTemplate.opsForValue().get(key);<br><span class="hljs-keyword">if</span> (shopJson != <span class="hljs-literal">null</span>) &#123;<br>	<span class="hljs-comment">// 如果redis中存放的是空字符串, 则说明MySQL中不存在数据</span><br>	<span class="hljs-keyword">if</span> (shopJson.isEmpty()) <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;<br>	<span class="hljs-keyword">return</span> JSON.parseObject(shopJson, Shop.class);<br>&#125;<br><span class="hljs-comment">// 2. 未命中, 从数据库查询</span><br><span class="hljs-type">Shop</span> <span class="hljs-variable">shop</span> <span class="hljs-operator">=</span> shopDao.queryById(id);<br><span class="hljs-keyword">if</span> (shop == <span class="hljs-literal">null</span>) &#123;<br>	<span class="hljs-comment">// 数据库中也不存在, 缓存空值</span><br>	stringRedisTemplate.opsForValue(<span class="hljs-string">&quot;shop:&quot;</span>+id, <span class="hljs-string">&quot;&quot;</span>, <span class="hljs-number">10</span>, TimeUnit.SECONDS);<br>	<span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;<br>&#125;<br><span class="hljs-comment">// 3. 将数据设置到redis中</span><br></code></pre></td></tr></table></figure>
+<p>此种方案会导致Redis占用较大的内存</p>
+<h4 id="布隆过滤器"><a href="#布隆过滤器" class="headerlink" title="布隆过滤器"></a>布隆过滤器</h4><p>高效的判断商铺ID是否存在 – HashSet</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">if</span>(!shopIDSet.containes(id)) <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;<br></code></pre></td></tr></table></figure>
+<p>在Spring中, 实现<code>Initializing</code>接口, 实现<code>afterPropertiesSet</code>方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 在设置当前这个类的属性的时候, 会执行</span><br><span class="hljs-comment">// 1. 查询所有的ID</span><br>List&lt;Long&gt; ids = shopDao.queryAllIDs();<br><span class="hljs-comment">// 2. 将商铺ID设置到shopIDSet</span><br>shopIDSet.addAll(ids);<br></code></pre></td></tr></table></figure>
+<p>动态修改<code>shopIDSet</code>.<br>新增商铺的时候 <code>shopIDSet.add(shopID);</code><br>当数据量大了之后, 假设有100k, HashSet效率很低. 每个ID需要8个字节, 如果1m, 要762MB, 可以通过布隆过滤器解决.</p>
+<p>布隆过滤器: 有一个固定大小的二进制数组(位图, BitMap)和一系列哈希函数组成<br><img src="/img/20230518224634.png" srcset="/img/loading.gif" lazyload alt="20230518224634.png"><br>布隆过滤器判断某个值存在, 小概率会误判. 如果误判对比一下字符串即可.<br>布隆过滤器判定某个值不存在, 则这个元素一定不存在.<br>布隆过滤器只能增加和查询, 不能删除<br>使用Guava创建布隆过滤器</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 1. 创建BloomFilter</span><br>BloomFilter&lt;String&gt; bloomFilter = BloomFilter<br>	.create(Funnels.stringFunnel(Charset.defaultCharset(), <span class="hljs-number">1000000</span>));<br><span class="hljs-comment">// 2. 往BloomFilter中添加值</span><br>bloomFilter.put(<span class="hljs-string">&quot;Bing&quot;</span>);<br><span class="hljs-comment">// 3. 判断某个值是否存在于BloomFilter中</span><br><span class="hljs-type">bool</span> <span class="hljs-variable">ex</span> <span class="hljs-operator">=</span> blommFilter.mightContain(<span class="hljs-string">&quot;Bing&quot;</span>);<br></code></pre></td></tr></table></figure>
+<p>缓冲空值可以为布隆过滤器兜底, 因为布隆过滤器可能存在误判.</p>
+<blockquote>
+<p>新增Shop和查询Shop可能不是一个系统, 因此需要通过中间件实现布隆过滤器<br><img src="/img/20230519155128.png" srcset="/img/loading.gif" lazyload alt="20230519155128.png"><br>使用Redis创建布隆过滤器(基于BitMap), Redisson实现过</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs java">RBloomFilter&lt;String&gt; bloomFilter = redissonClient.getBloomFilter(<span class="hljs-string">&quot;bf&quot;</span>);<br>bloomFilter.tryInit(<span class="hljs-number">10</span>, <span class="hljs-number">0.03</span>); <span class="hljs-comment">// 预期插入的次数, 误差率</span><br>bloomFilter.add(<span class="hljs-string">&quot;bing1&quot;</span>);<br>bloomFilter.add(<span class="hljs-string">&quot;bing2&quot;</span>);<br><br><span class="hljs-type">bool</span> <span class="hljs-variable">res</span> <span class="hljs-operator">=</span> bloomFilter.contains(<span class="hljs-string">&quot;bing1&quot;</span>);<br></code></pre></td></tr></table></figure>
+<p>Redis服务端也提供了BloomFilter, 以独立模块的形式存在, 下载源码, 进行编译, 得到redisbloom.so, <code>cp redisbloom.so /usr/local/bin</code>, 再修改<code>redis.conf</code>. 添加<code>loadmoudle /usr/local/bin/redisbloom.so</code><br><code>BF.ADD mybf 199</code> 向bloom filter里添加值<br><code>BF.EXISTS mybf 199</code>判断199在mybf中是否存在<br>在Java中, 可以通过lua脚本使用. </p>
+<h3 id="缓存击穿-互斥锁-逻辑过期"><a href="#缓存击穿-互斥锁-逻辑过期" class="headerlink" title="缓存击穿, 互斥锁, 逻辑过期"></a>缓存击穿, 互斥锁, 逻辑过期</h3><p>少部分热点key过期, 这些热点key的重建业务比较复杂<br>缓存击穿: 一个缓存重建业务较复杂的热点key突然失效了, 无数的请求访问会在瞬间给数据库带来巨大的冲击<br><img src="/img/20230519161509.png" srcset="/img/loading.gif" lazyload alt="20230519161509.png"></p>
+<h4 id="互斥锁"><a href="#互斥锁" class="headerlink" title="互斥锁"></a>互斥锁</h4><p>保证只有一个线程进行缓存重建<br><img src="/img/20230519161707.png" srcset="/img/loading.gif" lazyload alt="20230519161707.png"><br><img src="/img/20230519161957.png" srcset="/img/loading.gif" lazyload alt="20230519161957.png"><br>同时获取互斥锁, 只有一个成功, 成功后释放互斥锁, 其它线程加锁成功, 因此需要二次查缓存避免重复重建缓存. </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 执行SETNX成功, 返回true则表示获取锁.</span><br><span class="hljs-keyword">private</span> <span class="hljs-type">boolean</span> <span class="hljs-title function_">tryLock</span><span class="hljs-params">(String key)</span> &#123;<br>	<span class="hljs-type">Boolean</span> <span class="hljs-variable">res</span> <span class="hljs-operator">=</span> stringRedisTemplate<br>			.opsForValue() <br>			.setIfAbsent(key, <span class="hljs-number">1</span>, <span class="hljs-number">10</span>, TimeUnit.SECONDS);<br>	<span class="hljs-keyword">return</span> res == <span class="hljs-literal">null</span> ? <span class="hljs-literal">false</span> : <span class="hljs-literal">true</span>;<br>&#125;<br><br><span class="hljs-comment">// 释放锁</span><br><span class="hljs-keyword">private</span> <span class="hljs-type">boolean</span> <span class="hljs-title function_">unlock</span><span class="hljs-params">(String key)</span> &#123;<br>	stringRedisTemplate.delete(key);<br>&#125;<br><br><span class="hljs-comment">// 业务</span><br><span class="hljs-type">String</span> <span class="hljs-variable">lockKey</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;lock:shop:&quot;</span> + id;<br><span class="hljs-keyword">try</span> &#123;<br>	<span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>) &#123;<br>		<span class="hljs-type">boolean</span> <span class="hljs-variable">isLock</span> <span class="hljs-operator">=</span> tryLock(lockKey);<br>		<span class="hljs-keyword">if</span> (!isLock) &#123;<br>			<span class="hljs-comment">// 没有拿到互斥锁, 说明已经有一个线程在重建了</span><br>			<span class="hljs-comment">// 当前线程只需要休眠很小的一段时间, 然后尝试从缓存中拿</span><br>			TimeUnit.MILLISECONDS.sleep(<span class="hljs-number">60</span>);<br>			shop = findShopFromCache(key);<br>			<span class="hljs-keyword">if</span> (shop != <span class="hljs-literal">null</span>) <span class="hljs-keyword">return</span> shop;<br>			<span class="hljs-keyword">continue</span>;<br>		&#125;<br>		<span class="hljs-comment">// 再次检查商铺中是否有数据</span><br>		<span class="hljs-comment">// 用于处理这种场景：重建缓存的线程释放锁，当前线程拿到锁</span><br>		shop = findShopFromCache(key);<br>		<span class="hljs-keyword">if</span> (shop != <span class="hljs-literal">null</span>) <span class="hljs-keyword">return</span> shop;<br>		shop = shopDao.queryByID(id);<br>		<span class="hljs-keyword">if</span> (shop == <span class="hljs-literal">null</span>) <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;<br>		<span class="hljs-comment">// 将数据设置到Redis缓存</span><br>		stringRedisTemplate.opsForValue()<br>			.set(key, JSON.toJSONString(shop), <span class="hljs-number">300</span> + random.nextInt(<span class="hljs-number">5</span>), TimeUnit.MINUTES);<br>		<span class="hljs-keyword">return</span> shop;<br>	&#125;<br>&#125; <span class="hljs-keyword">catch</span> (Exception e) &#123;<br>	logger.error(<span class="hljs-string">&quot;重建商铺缓存失败&quot;</span>, e);<br>&#125; <span class="hljs-keyword">finally</span> &#123;<br>	unlock(lockKey);<br>&#125;<br></code></pre></td></tr></table></figure>
+<blockquote>
+<p>使用互斥解决缓存穿透的话, 会有大量的线程处于等待, 可以通过逻辑过期解决</p>
+</blockquote>
+<p> <img src="/img/20230519172929.png" srcset="/img/loading.gif" lazyload alt="20230519172929.png"><br> <img src="/img/20230519175021.png" srcset="/img/loading.gif" lazyload alt="20230519175021.png"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-type">ExecutorService</span> <span class="hljs-variable">CACHE_REBUILD_THREAD_POLL</span> <span class="hljs-operator">=</span> Executors.newFixedThreadPool(<span class="hljs-number">10</span>);<br><br><span class="hljs-comment">// 判断是否过期</span><br><span class="hljs-type">Shop</span> <span class="hljs-variable">shop</span> <span class="hljs-operator">=</span> JSON.parseObject(shopJson, Shop.class);<br><span class="hljs-type">LocalDatetime</span> <span class="hljs-variable">expireTime</span> <span class="hljs-operator">=</span> shop.getExpireTime();<br><span class="hljs-keyword">if</span> (expireTime.isAfter(LocalDateTime.now())) &#123;<br>	<span class="hljs-comment">// 没有过期, 直接返回</span><br>	<span class="hljs-keyword">return</span> shop; <br>&#125;<br><span class="hljs-comment">// 已经过期, 重建缓存</span><br><span class="hljs-type">String</span> <span class="hljs-variable">lockKey</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;lock:shop:&quot;</span> + id;<br><span class="hljs-keyword">if</span> (tryLock(lockKey)) &#123;<br>	<span class="hljs-type">Shop</span> <span class="hljs-variable">cacheShop</span> <span class="hljs-operator">=</span> findShopFromCache(key);<br>	<span class="hljs-keyword">if</span>(cacheShop != <span class="hljs-literal">null</span> <br>		&amp;&amp; cacheShop.getExpireTime().isAfter(LocalDateTime.now()))  &#123;<br>		<span class="hljs-keyword">return</span> cacheShop;<br>	&#125;<br>	<span class="hljs-comment">// 获取锁成功, 开启独立线程, 执行缓存重建</span><br>	CACHE_REBUILD_THREAD_POOL.execute(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Runnable</span>() &#123;<br>		<span class="hljs-meta">@Override</span><br>		<span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>			<span class="hljs-keyword">try</span> &#123;<br>				<span class="hljs-type">Shop</span> <span class="hljs-variable">shop</span> <span class="hljs-operator">=</span> shopDao.queryByID(id);<br>				shop.setExpireTime(LocalDateTime.now().plusSeconds(<span class="hljs-number">300</span>));<br>				stringRedisTemplate.opsForValue().set(key, JSON.toJSONString(shop));<br>			&#125; finnaly &#123;<br>				unlock(lockKey);<br>			&#125;<br>		&#125;<br>	&#125;);<br>&#125;<br><br><span class="hljs-comment">// 加锁不成功直接返回过期的数据</span><br><span class="hljs-keyword">return</span> shop;<br></code></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>解决方案</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>互斥锁</td>
+<td>1. 没有额外内存消耗 2. 保证数据一致性 3.实现简单</td>
+<td>1.线程需要等待, 影响性能 2. 可能有死锁风险</td>
+</tr>
+<tr>
+<td>逻辑过期</td>
+<td>1.线程无需等待, 性能较好</td>
+<td>1. 不能保证数据一致性 2. 有额外的内存消耗 3. 实现复杂</td>
+</tr>
+</tbody></table>
+<h3 id="缓存雪崩"><a href="#缓存雪崩" class="headerlink" title="缓存雪崩"></a>缓存雪崩</h3><p>热点key: 经常被大量用户访问的key.<br>这一类热点数据, 我们一般会提前将他们放到Redis中, 这一步叫数据的预热<br>缓存雪崩: 大量的热点key都设置了相同的过期时间, 导致缓存在同一时刻全部失效, 造成瞬时数据库请求量大, 压力骤增, 引起雪崩, 甚至数据库被打挂.<br>解决方案: 给不同的key的TTL添加随机值<br><img src="/img/20230519161152.png" srcset="/img/loading.gif" lazyload alt="20230519161152.png"><br>Redis挂掉了, 解决方案: 利用Redis集群, 提高Redis的可用性</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Redis/" class="category-chain-item">Redis</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/Redis/%E7%BC%93%E5%AD%98/" class="category-chain-item">缓存</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Redis/" class="print-no-link">#Redis</a>
+      
+        <a href="/tags/%E7%BC%93%E5%AD%98/" class="print-no-link">#缓存</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Redis - 缓存应用</div>
+      <div>https://bing-zhub.github.io/2023/09/05/Redis-缓存应用/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Bing Zhu</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年9月5日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/09/02/MQTT-over-QUIC/" title="MQTT over QUIC">
+                        <span class="hidden-mobile">MQTT over QUIC</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <i class="iconfont icon-bug"></i> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
