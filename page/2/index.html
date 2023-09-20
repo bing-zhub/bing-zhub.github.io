@@ -255,6 +255,132 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
+        <a href="/2023/09/02/%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/" target="_self">
+          分布式锁
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2023/09/02/%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/" target="_self">
+        <div>
+          主动轮询型: Redis &#x2F; MySQL类似单机锁的主动轮询 + cas乐观锁模型, 取锁房会持续对分布式锁发出尝试获取操作, 如果锁已经被占用则会不断发起重试, 直到获取锁成功为止  优势: 无需阻塞操作, 短期来看操作比较轻劣势: 长时间抢不到锁, 会浪费CPU时间片适合场景: 并发竞争强度低的场景  watch回调型: etcd &#x2F; zookeeper在取锁方发现锁已经
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2023-09-02 15:55" pubdate>
+              2023-09-02
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F/" class="category-chain-item">分布式</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Go/">#Go</a>
+            
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81/">#分布式锁</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2023/09/02/Go%E4%B8%ADContext%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/" target="_self">
+          Go中Context的实现原理
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2023/09/02/Go%E4%B8%ADContext%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/" target="_self">
+        <div>
+          主要用在异步场景中用于实现并发协调以及对Goroutine的生命周期控制, 兼有一定的数据存储能力. 核心数据结构核心API123456type Context interface &#123;	Deadline() (deadline time.Time, ok bool) // 返回ctx过期的时间	Done() &lt;-chan struct&#123;&#125; // 返回用以标识ct
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2023-09-02 15:54" pubdate>
+              2023-09-02
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Go/" class="category-chain-item">Go</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Go/">#Go</a>
+            
+              <a href="/tags/Context/">#Context</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
         <a href="/2023/09/02/Go%E4%B8%AD%E5%8F%AF%E8%83%BD%E7%9A%84%E9%9D%A2%E8%AF%95%E9%A2%98/" target="_self">
           Go中可能的面试题
         </a>
@@ -740,139 +866,6 @@
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
             <time datetime="2023-09-01 20:59" pubdate>
-              2023-09-01
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/Go/" class="category-chain-item">Go</a>
-  
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Go/">#Go</a>
-            
-              <a href="/tags/IT/">#IT</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2023/09/01/Go%E4%B8%AD%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" target="_self">
-          Go中的数据结构
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2023/09/01/Go%E4%B8%AD%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" target="_self">
-        <div>
-          基本类型的字节数可以用Unsafe.Sizeof查看任何变量的字节大小  int大小跟随系统字长 指针的大小也是系统字长  空结构体空结构体大小为0但有地址, 但所有的空结构体(独立出现, 没有被其它struct引用)都指向同一地址(zerobase, 0x8a82f8)当被内嵌在其它struct中, 地址不是zerobase空结构体主要是为了节约内存,比如使用map实现hashset  123/
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2023-09-01 20:59" pubdate>
-              2023-09-01
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/Go/" class="category-chain-item">Go</a>
-  
-  
-    <span>></span>
-    
-  <a href="/categories/Go/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" class="category-chain-item">数据结构</a>
-  
-  
-
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Go/">#Go</a>
-            
-              <a href="/tags/IT/">#IT</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2023/09/01/Go%E6%98%AF%E4%B8%8D%E6%98%AF%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/" target="_self">
-          Go是不是面向对象
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2023/09/01/Go%E6%98%AF%E4%B8%8D%E6%98%AF%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/" target="_self">
-        <div>
-          Go允许OO的编程风格12345type Person struct &#123;	name string	age int&#125;func (p Person) walk() &#123;&#125; Go的Struct可以看做是其他语言的Class Go缺乏其它语言的继承结构 Go的接口与其它语言有很大差异  Go的”类” 其它语言, 往往用class表示一类数据 class的每一个实例称
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2023-09-01 20:57" pubdate>
               2023-09-01
             </time>
           </div>

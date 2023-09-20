@@ -4,6 +4,64 @@
   
   
   <entry>
+    <title>分布式共识算法 - Raft</title>
+    <link href="/2023/09/20/%E5%88%86%E5%B8%83%E5%BC%8F%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95-Raft/"/>
+    <url>/2023/09/20/%E5%88%86%E5%B8%83%E5%BC%8F%E5%85%B1%E8%AF%86%E7%AE%97%E6%B3%95-Raft/</url>
+    
+    <content type="html"><![CDATA[<h1 id="引入"><a href="#引入" class="headerlink" title="引入"></a>引入</h1><h2 id="如何提高大规模数据的读写性能"><a href="#如何提高大规模数据的读写性能" class="headerlink" title="如何提高大规模数据的读写性能"></a>如何提高大规模数据的读写性能</h2><ul><li>纵向拓展 - 更好的机器</li><li>横向拓展 - 更多的机器</li></ul><h3 id="横向分布式"><a href="#横向分布式" class="headerlink" title="横向分布式"></a>横向分布式</h3><ul><li>优势<br>数据备份 - 避免单点故障导致数据丢失或服务不可用<br>负载均衡 - 多个节点共同分担总任务</li><li>问题<br>多节点如何保持一致性<br>如何保证分布式系统的秩序(正常提供服务, 不出现脑裂&#x2F;崩溃&#x2F;耗时过长)</li></ul><h2 id="CAP理论"><a href="#CAP理论" class="headerlink" title="CAP理论"></a>CAP理论</h2><p>一致性 Consistency &#x2F; 可用性 availability &#x2F; 分区容错性 partition tolerance<br>CAP三项性质中至多满足其二<br>单机系统, 自身就满足P; 分布式系统下, P是一定要保证的;<br>CP(Etcd) &#x2F; AP(Redis)</p><h2 id="一致性问题"><a href="#一致性问题" class="headerlink" title="一致性问题"></a>一致性问题</h2><h3 id="即时一致性"><a href="#即时一致性" class="headerlink" title="即时一致性"></a>即时一致性</h3><ul><li>主从备份(主节点接收写操作, 异步同步给从从节点, 从节点接收读操作)</li></ul><h3 id="顺序一致性"><a href="#顺序一致性" class="headerlink" title="顺序一致性"></a>顺序一致性</h3><p>因为网络延迟, 前序的写操作没有同步完成就同步了后续的写操作<br>更严重, 因为记录了错误的数据, 后续客户端读取都是错误的数据</p><h2 id="可用性问题"><a href="#可用性问题" class="headerlink" title="可用性问题"></a>可用性问题</h2><p>每次写操作, 先同步到所有从节点后, 再回复客户端ACK</p><h2 id="木桶效应"><a href="#木桶效应" class="headerlink" title="木桶效应"></a>木桶效应</h2><p>CP也会尽可能保证A, 让A在及格的层面, AP也是如此<br>调和CA之间的矛盾</p><h1 id="核心概念"><a href="#核心概念" class="headerlink" title="核心概念"></a>核心概念</h1><h2 id="术语"><a href="#术语" class="headerlink" title="术语"></a>术语</h2><h3 id="三种角色"><a href="#三种角色" class="headerlink" title="三种角色"></a>三种角色</h3><p>领导者 Leader - 发起提议, 提交多数派认可的决断<br>跟随者 Follower - 对提议, 提交与竞选进行响应<br>候选者 Candidate - 竞选流程的临时状态, 多数派投票后切为leader或follower</p><h2 id="最终一致性"><a href="#最终一致性" class="headerlink" title="最终一致性"></a>最终一致性</h2><p>中强一致性, 最终可以提供正确的结果, 但需要时间进行同步</p><h3 id="即时一致性-1"><a href="#即时一致性-1" class="headerlink" title="即时一致性"></a>即时一致性</h3><p>强一致性, 服务端要求做到写入立即可以读到正确结果</p><h3 id="预写日志"><a href="#预写日志" class="headerlink" title="预写日志"></a>预写日志</h3><p>WAL 写记录前先写日志</p><h3 id="状态机"><a href="#状态机" class="headerlink" title="状态机"></a>状态机</h3><p>节点存储数据的介质</p><h3 id="两阶段提交"><a href="#两阶段提交" class="headerlink" title="两阶段提交"></a>两阶段提交</h3><p>提议 - proposal, leader向所有阶段发起日志同步请求的过程<br>提交 - commit, leader认可一笔写请求被系统采纳的过程</p><h3 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h3><p>将预写日志的内容写到状态机的过程</p><h3 id="任期"><a href="#任期" class="headerlink" title="任期"></a>任期</h3><p>标识leader更迭, 每个任期至多只有一个leader</p><h3 id="日志索引"><a href="#日志索引" class="headerlink" title="日志索引"></a>日志索引</h3><p>日志在预写日志数组的位置</p><h3 id="脑裂"><a href="#脑裂" class="headerlink" title="脑裂"></a>脑裂</h3><p>同一任期内出现两个leader</p><h2 id="多数派原则"><a href="#多数派原则" class="headerlink" title="多数派原则"></a>多数派原则</h2><p>多数派, 一个群体数量的一半以上<br>系统决断无需全员参与, 多数派达成的共识即可视为整个系统的答复.<br>提升容错率, 5个节点里, 如果有两个宕机了, 也可以正常完成.</p><h2 id="一主多从"><a href="#一主多从" class="headerlink" title="一主多从"></a>一主多从</h2><p>一个leader, 多个follower</p><h2 id="读写分离"><a href="#读写分离" class="headerlink" title="读写分离"></a>读写分离</h2><p>读操作, 由集群的任意节点提供服务;<br>写操作, 统一由leader处理, 并向follower同步, 如果follower接收到客户端的写操作, 也要转发给leader进行处理;</p><h2 id="预写日志-状态机"><a href="#预写日志-状态机" class="headerlink" title="预写日志 &#x2F; 状态机"></a>预写日志 &#x2F; 状态机</h2><p>先记录写请求的明细添加到日志数组, 当日志得到多数派认可后, 才能提交, 将变更应用到状态机当中<br>日志会有idx, 因此可以保证顺序一致性</p><h2 id="两阶段提交-1"><a href="#两阶段提交-1" class="headerlink" title="两阶段提交"></a>两阶段提交</h2><p>流程</p><ol><li>leader接收客户端写请求</li><li>[提议, proposal]leader将写请求添加到本地预写日志, 并向其它节点广播同步</li><li>其它节点收到请求后, 校验是否可以同步</li><li>[提交, commit]集群中半数以上节点都添加了预写日志, 并返回ack, leader会提交请求, 并返回客户端ack</li><li>其它节点感知到提交, 也会在预写日志提交请求</li><li>最终一致性 -&gt; 异步应用; 立即一致性 -&gt; 先应用到状态机, 再返回客户端ack</li></ol><h2 id="领导者选举"><a href="#领导者选举" class="headerlink" title="领导者选举"></a>领导者选举</h2><p>leader挂了, follower补位成为leader<br>如何感知leader挂了? leader需要定期给follower发送心跳, follower会建立心跳检测定时器, 超时就认为已死, 自身切换成candidate发起竞选, 补位成为新的leader<br>什么样的follower有资格成为leader? follower成为candidate后, 会广播向所有节点拉票, 赞同达到多数派时, candidate会胜任, 成为新的leader</p><h2 id="任期与日志索引"><a href="#任期与日志索引" class="headerlink" title="任期与日志索引"></a>任期与日志索引</h2><p>发起竞选, 在当前term+1, 如果成为新的leader,  </p><p>term, 标识哪个任期的leader在位时同步时写入的<br>index, 标识预写日志数组的位置<br>通过{term, index} 可以组成一个全局唯一键, 定位到一则日志.</p><h1 id="角色流转"><a href="#角色流转" class="headerlink" title="角色流转"></a>角色流转</h1><h2 id="定义及切换"><a href="#定义及切换" class="headerlink" title="定义及切换"></a>定义及切换</h2><h2 id="Leader"><a href="#Leader" class="headerlink" title="Leader"></a>Leader</h2><p>两阶段提交<br>leader需要周期性地向所有节点发送自己的心跳, 告知自身健康情况<br>    让follower重置心跳检测定时器, 避免其切换成candidate发起竞选<br>    在心跳请求中带上leader最新已提交日志的id{term + index}, 推动follower更新日志提交进度</p><p>心跳是双向的, 发送心跳, 得到follower回复可以检查当前term是否合法</p><h2 id="Follower"><a href="#Follower" class="headerlink" title="Follower"></a>Follower</h2><p>同步leader传过来二等写请求<br>接收leader心跳, 获取commitIndex信息, 及时完成多数派认可的预写日志的提交, 推进器写入状态机的进度<br>为candidate进行投票<br>通过心跳检测定时器关注leader健康状态<br>candidate</p><h1 id="请求链路"><a href="#请求链路" class="headerlink" title="请求链路"></a>请求链路</h1><h2 id="写"><a href="#写" class="headerlink" title="写"></a>写</h2><h3 id="整体链路"><a href="#整体链路" class="headerlink" title="整体链路"></a>整体链路</h3><h3 id="新的预写日志在末尾-commit-index之后"><a href="#新的预写日志在末尾-commit-index之后" class="headerlink" title="新的预写日志在末尾(commit index之后)"></a>新的预写日志在末尾(commit index之后)</h3><p>同步时, 会带上最后一笔日志的{term, index}; 前一笔日志的{term, index}; 以及自身的任期<br>follower接收到日志后, 会对比已有的最后一笔日志的标识是否和leader发过来的最后一笔一样<br>    如果一样才会接受, 接受后, 在自己的预写日志中追加日志, 回复ACK.<br>    如果不同, 会要求leader先把缺失部分的日志补齐, 返回具体的错误原因.<br>如果多数认可, leader就会commit请求[commitIndex后移, 将新日志放入commit].<br>    leader在同步心跳的时候, 会把新commit index进行同步</p><h3 id="bad-case"><a href="#bad-case" class="headerlink" title="bad case"></a>bad case</h3><p>case 1 - leader任期滞后<br>    follower拒绝同步请求, 并告知leader最新的term; leader感知到新term的存在, 会主动退位</p><p>case 2 - follower日志滞后<br>    follower要求已写入的日志和leader已写入的日志完全一致, 会追溯之前的日志</p><p>case 3 - follower日志超前<br>    证实leader的term合法性后, 将超前的日志移除, 之后同步leader传送的日志</p><p>case 4 - 将最终一致性提升为即时一致性<br>    把日志commit后, 要立即apply到状态机, 应用完成后再给ACK</p><h3 id="读"><a href="#读" class="headerlink" title="读"></a>读</h3><p>整体链路<br>预写日志 + 二阶段提交 + 多数派原则 -&gt; 日志最终一致性 -&gt; 状态机最终一致性<br>最终一致性 -&gt; 即时一致性<br>    applied index校验<br>        写请求后, leader会把最新的applied index反馈给客户端;<br>        读请求时<br>            如果follower发现自身的applied index落后于客户端applied index, 说明数据存在滞后, 则拒绝请求, 由客户端发送给其它节点处理.<br>            如何大于, 则直接处理.</p><p>强制读主<br>    follower收到读请求时, 通过转发给leader处理.<br>    leader压力过大, 其它follower节点只能沦为备份数据的节点<br>    需要额外发起一次合法性身份证明, 如果得到多数派认可, 说明身份合法, 则对读请求进行响应.</p><p>内部请求链路<br>    日志同步请求<br>        请求参数<br>            term - leader的任期<br>            leaderID - leader的节点ID, 方便后续follower转发写请求<br>            leaderCommit - leader最新提交的日志index{term, index }, 方便follower更新数据进度<br>            prevLogIndex - 当前同步日志的前一条日志的index<br>            prevLogTerm - 当前同步日志的前一条日志的term<br>            log[] - 同步的日志, 可能为多笔, 因为follower可能滞后了多笔</p><pre><code class="hljs">心跳 &amp; 提交同步请求    请求参数        term - leader的任期        leaderID - leader的节点ID, 方便后续follower转发写请求        leaderCommit - leader最新提交的日志index 方便follower更新数据进度竞选拉票请求    整体流程    参数        term - candidate的竞选任期, 如果上位, 就采用次任期        candidateID - 方便follower标记自己将票投给了谁        lastLogIndex - 最后一笔预写日志的index        lastLogTerm - 最后一笔预写日志的term    candidate后处理        获得多数票, 晋升为leader, 竞选term为新的term        反对多数票, 退回follower        反对票中出现更高的term, 退回follower, 更新任期        形成决议前, 收到了任期大于等于自己的leader的请求, 退回follower, 更新term        拉票超时, 自增竞选任期, 发起新一轮竞选.</code></pre><p>集群变更<br>    集群新增节点<br>        leader统一处理<br>        laeder发起提议(proposal), 吧配置变更的日志广播给所有节点<br>        配置变更得到老结点的多数派认可, leader才会提交配置变更, 在配置参数中将新老两部分节点合并到一起<br>        配置变更期间, 需要老结点多数派的赞同票才可以当选<br>        配置变更期间, 处理写请求时,  需要在提议阶段得到老结点的多数派的认可, 才能提交.</p><pre><code class="hljs">bad case    脑裂问题 - 不遵循老结点多数派会遇到的问题</code></pre>]]></content>
+    
+    
+    <categories>
+      
+      <category>分布式</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>共识算法</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>常见的层式数据结构</title>
+    <link href="/2023/09/20/%E5%B8%B8%E8%A7%81%E7%9A%84%E5%B1%82%E5%BC%8F%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/"/>
+    <url>/2023/09/20/%E5%B8%B8%E8%A7%81%E7%9A%84%E5%B1%82%E5%BC%8F%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/</url>
+    
+    <content type="html"><![CDATA[<h2 id="B-树"><a href="#B-树" class="headerlink" title="B+树"></a>B+树</h2><p>应用: MySQL, MongoDB<br><img src="/img/Pasted%20image%2020230920231201.png"><br>多路平衡搜索树</p><p>特征:</p><ul><li>非叶子结点只存储索引信息</li><li>叶子结点存储数据信息</li><li>叶子节点之间依次相连</li></ul><p>为什么要多路<br>一个节点多条链路, 相较于平衡二叉树更是一个矮胖的结构, 树的高度比较低, 较少的磁盘IO次数来索引树中数据</p><p>为什么非叶子节点只存储索引信息<br>B+树节点映射固定大小的磁盘数据，可以包含更多的索引信息，能快速锁定数据所在叶子节点位置</p><p>为什么叶子节点依次<br>相连便于范围查询，避免中序遍历回溯去查找下一个节点</p><p>索引信息和数据信息的分层管理，便于高效地组织磁盘数据、快速实现单点和范围查询</p><h2 id="跳表-SkipList"><a href="#跳表-SkipList" class="headerlink" title="跳表 SkipList"></a>跳表 SkipList</h2><p>应用: Redis中的zset实现, rocksdb内存数据库<br><img src="/img/Pasted%20image%2020230920231040.png"><br>多层级有序链表</p><p>跳表特征:<br>1.基于链表实现的二分查找跳表特征<br>2.最底层链表包含所有数据信息</p><p>为什么增加链表层级</p><ul><li>实现跳跃查询，从而提升搜索性能节点</li></ul><p>什么时侯增加层高</p><ul><li>插入节点时随机层高</li></ul><p>为什么不选用红黑树</p><ul><li>范围查询</li><li>跳表范围查询遍历的节点更少</li></ul><p>通过增加链表层级, 实现二分查找, 同时底部链表包含所有数据, 便于范围查询</p><h2 id="时间轮"><a href="#时间轮" class="headerlink" title="时间轮"></a>时间轮</h2><p>应用: kafka, netty, skynet<br><img src="/img/Pasted%20image%2020230920231129.png"><br>多层级时间轮<br>秒 0 1 … 59<br>分 0 1 … 59<br>时 0 1 … 23<br>每一层是一个循环数组, 通过链表指向不同的任务.</p><p>时间轮的特征:</p><ul><li>每层时间轮都有一个时间指针，按照当前层级的时间精度移动<ul><li>第1层级移动到哪，说明该时刻的任务到期该执行</li><li>其他层级时间指针移动到哪，需要往上一层级重新映射</li></ul></li><li>相同时的任务，通过链表链接起来</li></ul><p>通过增加层级，针对延时任务到期的轻重缓急进行分层管理，有效降低空间占用</p><h2 id="LSM-Tree"><a href="#LSM-Tree" class="headerlink" title="LSM-Tree"></a>LSM-Tree</h2><p>应用: RocksDB<br><img src="/img/Pasted%20image%2020230920230616.png"><br>LSM-Tree特征:</p><ol><li>内存分为memtable和immutable memtable(用于持久化)</li><li>磁盘分为L0~L6, SST</li></ol><p>冷热数据分离, 越热的数据越上面, 越冷的数据越下面</p><p>通过对数据的分层管理，实现磁盘顺序IO,有效解决磁盘写密集场景问题：<br>磁盘中文件分层，通过compaction进行数据合并压缩，实现更加紧凑的存储</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>数据结构</category>
+      
+      <category>B+Tree</category>
+      
+      <category>LSM</category>
+      
+      <category>SkipList</category>
+      
+      <category>TimeWheel</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>数据结构</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>Redis - 缓存应用</title>
     <link href="/2023/09/05/Redis-%E7%BC%93%E5%AD%98%E5%BA%94%E7%94%A8/"/>
     <url>/2023/09/05/Redis-%E7%BC%93%E5%AD%98%E5%BA%94%E7%94%A8/</url>
